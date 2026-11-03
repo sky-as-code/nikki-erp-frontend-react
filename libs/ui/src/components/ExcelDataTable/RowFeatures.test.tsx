@@ -193,6 +193,7 @@ describe('ExcelDataTable action columns', () => {
 		fireEvent.click(screen.getByTestId('t.table.row.a.action.more.run'));
 		await waitFor(() => expect(bus.publish).toHaveBeenCalledWith({
 			name: 'lines.run', payload: { id: 'a', etag: 'ea', name: 'Alpha', kind: 'x' },
+			operation: expect.objectContaining({ name: 'ui.action.invoke' }),
 		}));
 	});
 

@@ -1,6 +1,6 @@
 import { createSchemaCache } from '../cache/schema_cache';
 import { createUpstreamClient } from '../http/upstream_client';
-import { createConsoleLogger } from '../logging/logger';
+import { createJsonLogger } from '../logging/logger';
 import { createSessionCookies } from '../session/cookies';
 
 import type { SchemaCache } from '../cache/schema_cache';
@@ -27,7 +27,7 @@ const MS_PER_MINUTE = 60_000;
 export type ContainerOverrides = Partial<Omit<Container, 'config'>>;
 
 export function createContainer(config: AppConfig, overrides: ContainerOverrides = {}): Container {
-	const logger = overrides.logger ?? createConsoleLogger();
+	const logger = overrides.logger ?? createJsonLogger();
 	return Object.freeze({
 		config,
 		logger,

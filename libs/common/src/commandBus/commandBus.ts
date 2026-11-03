@@ -1,6 +1,7 @@
 import {
 	Command, CommandBusResponse, CommandHandler, CommandResponse, ICommandBus, ModuleLoader, ServiceResult,
 } from './types';
+import { withOperation } from '../telemetry/operationCarrier';
 
 
 /**
@@ -82,7 +83,7 @@ export class CommandBus implements ICommandBus {
 			return this.toResponse<TData>(null, new Error(`No handler for command "${command.name}".`));
 		}
 		try {
-			const returned = await handler(command);
+			const returned = await handler(withPayloadOperation(command));
 			return this.toResponse<TData>(normalizeResult<TData>(returned), null);
 		}
 		catch (error) {
@@ -162,6 +163,11 @@ function normalizeResult<TData>(
 		throw candidate.error;
 	}
 	return { data: candidate.data ?? null, clientErrors: [] };
+}
+
+/** The command with its operation copied into the payload, where the service layer can reach it. */
+function withPayloadOperation(command: Command): Command {
+	return command.operation ? { ...command, payload: withOperation(command.payload, command.operation) } : command;
 }
 
 export function createCommandBus(): CommandBus {

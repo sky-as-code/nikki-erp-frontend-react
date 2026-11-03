@@ -1,3 +1,4 @@
+import { initTelemetry } from '@nikkierp/common';
 import * as shell from '@nikkierp/nikkiportal-shell';
 import { MicroAppMetadata, MicroAppShellBundle } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -6,6 +7,10 @@ import { BrowserRouter as Router } from 'react-router';
 
 import remoteApps from './modules.json';
 import './styles/index.css';
+
+
+// Before anything renders or calls the API, so the first request already carries a valid trace (FE-01).
+initTelemetry();
 
 // Uncomment one of these when mounting as ShadowDOM
 // const essentialBundleUrl = 'http://localhost:3000/@fs/F:/github/sky-as-code/nikki-erp-frontend-react/modules/essential/src/index.tsx';

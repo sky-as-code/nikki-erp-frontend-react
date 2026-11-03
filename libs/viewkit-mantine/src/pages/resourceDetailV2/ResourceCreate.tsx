@@ -1,3 +1,4 @@
+import { UI_OPERATIONS } from '@nikkierp/common';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { defineComponent } from '@nikkierp/viewengine/metadata';
@@ -45,7 +46,7 @@ export function ResourceCreate(props: ResourceCreateProps): React.ReactNode {
 export function ResourceCreateProvider(
 	props: ResourceCreateProps & { children: React.ReactNode },
 ): React.ReactNode {
-	const createCmd = useCommand<dyn.RestCreateResponse>(props.commands.create ?? '');
+	const createCmd = useCommand<dyn.RestCreateResponse>(props.commands.create ?? '', { operation: UI_OPERATIONS.FORM_SAVE });
 	const publishCreate = createCmd.publish;
 	const afterSave = useAfterSaveHooks();
 	const runAfterSave = afterSave.run;

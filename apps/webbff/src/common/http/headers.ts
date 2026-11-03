@@ -16,10 +16,18 @@ const RESPONSE_HEADERS = new Set([
 	'accept-ranges', 'content-range', 'x-accel-buffering',
 ]);
 
+/**
+ * Telemetry and idempotency headers. Never copied raw in either direction: the upstream client injects its own
+ * from the active context, and the BFF answers with its own `X-Trace-ID`/`X-Idempotency-ID`.
+ */
+export const TELEMETRY_HEADERS: readonly string[] = [
+	'traceparent', 'tracestate', 'baggage', 'x-idempotency-id', 'x-trace-id',
+];
+
 // Never forwarded in either direction, whatever the allowlists say.
 const BLOCKED_HEADERS = new Set([
 	ACCESS_TOKEN_HEADER, 'authorization', 'cookie', 'set-cookie', 'connection', 'keep-alive',
-	'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'upgrade', 'host',
+	'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'upgrade', 'host', ...TELEMETRY_HEADERS,
 ]);
 
 export interface UpstreamRequestHeaderOptions {
@@ -58,6 +66,15 @@ export function buildForwardedHeaders(incoming: IncomingHttpHeaders, info: Forwa
 		headers['x-forwarded-host'] = info.host;
 	}
 	return headers;
+}
+
+/** Deletes every telemetry header from `headers`, whatever its case. */
+export function stripTelemetryHeaders(headers: OutgoingHttpHeaders): void {
+	for (const name of Object.keys(headers)) {
+		if (TELEMETRY_HEADERS.includes(name.toLowerCase())) {
+			delete headers[name];
+		}
+	}
 }
 
 function pickHeaders(source: IncomingHttpHeaders, accept: (name: string) => boolean): OutgoingHttpHeaders {

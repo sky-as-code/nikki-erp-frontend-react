@@ -7,7 +7,7 @@
 		"alwaysStrict": true,
 		"declaration": false,
 		"esModuleInterop": true,
-		"module": "node16",
+		"module": "node20",
 		"moduleResolution": "node16",
 		"noEmit": false,
 		"noUnusedLocals": false,

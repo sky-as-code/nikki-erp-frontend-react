@@ -1,4 +1,5 @@
 import { Table as MantineTable, Text } from '@mantine/core';
+import { UI_OPERATIONS } from '@nikkierp/common';
 import { showClientErrorModal } from '@nikkierp/common/service';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { IconPlus } from '@tabler/icons-react';
@@ -18,6 +19,7 @@ import { RowLoading } from './RowLoading';
 import { groupWithSubAdded, newGroupOf, rowSpanInsertFields } from './rowSpan/rowSpanModel';
 import { useRowUpdateWrite } from './rowUpdateWrite';
 import { useColumnCount } from './tableLayout';
+import { publishTraced } from '../../hookhoc/tracedPublish';
 import { useSchemaLocalize, useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button } from '../Button';
@@ -461,7 +463,9 @@ function useNewRowWrite(
 		}
 		const payload = rowSpan ? newGroupOf(values, rowSpan.config) : values;
 		if (sinks.createCommand) {
-			const response = await commandBus.publish<unknown>({ name: sinks.createCommand, payload });
+			const response = await publishTraced<unknown>(
+				commandBus, { name: sinks.createCommand, payload }, UI_OPERATIONS.FORM_SAVE,
+			);
 			const clientErrors = response.result?.clientErrors ?? [];
 			if (clientErrors.length > 0) {
 				return clientErrors;

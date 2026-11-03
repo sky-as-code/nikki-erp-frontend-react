@@ -1,3 +1,4 @@
+import { UI_OPERATIONS } from '@nikkierp/common';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { ClientErrorItem } from '@nikkierp/common/types';
 import { mergeSearchGraphs, SearchData } from '@nikkierp/ui/components/ExcelDataTable';
@@ -7,6 +8,8 @@ import React from 'react';
 
 import { isSameSearchRequest } from './searchRequest';
 
+
+const SCREEN_LOAD = { operation: UI_OPERATIONS.SCREEN_LOAD };
 
 export type UseResourceSearchOptions = {
 	schemaName: string,
@@ -74,7 +77,7 @@ export function isStubSearchData(data: SearchData | null): boolean {
  */
 export function useResourceSearch(opts: UseResourceSearchOptions): UseResourceSearchResult {
 	const { pack, failed: schemaFailed } = useSchemaPack(opts.schemaName);
-	const search = useCommand<dyn.RestSearchResponse<any>>(opts.searchCommand);
+	const search = useCommand<dyn.RestSearchResponse<any>>(opts.searchCommand, SCREEN_LOAD);
 	// Initialiser form: a fresh object literal from the caller must not retrigger.
 	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(() => opts.initialRequest);
 	const [cachedSearchData, setCachedSearchData] = React.useState<SearchData | null>(null);

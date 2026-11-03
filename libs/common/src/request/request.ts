@@ -2,9 +2,14 @@
 import kyLib, { HTTPError } from 'ky';
 
 import { announceAuthorizationErrors } from './authorizationEvents';
+import {
+	newRequestTelemetryState, REQUEST_TELEMETRY_OPTION, stampRequestTelemetry, tracedFetch,
+} from './requestTelemetry';
 import { announceServerError, isServerErrorStatus, ServerFailureError } from './serverErrorEvents';
 import { ClientErrorItem, ClientErrors } from '../types/common';
 
+import type { WithRequestTelemetry } from './requestTelemetry';
+import type { TelemetryOperation } from '../telemetry/operation';
 import type { KyInstance, Input, Options, KyRequest } from 'ky';
 
 
@@ -25,6 +30,13 @@ export type RequestOptions = Options & {
 	// If true, the request does not wait for the session to be ensured first.
 	noAuth?: boolean,
 	dedupKey?: string,
+	/** The user operation this call belongs to (`traceOperation`); without one the call is its own root trace. */
+	operation?: TelemetryOperation,
+	/**
+	 * Only to resend the same logical request whose outcome is unknown (FE-ID-04). Left unset, a fresh UUIDv7
+	 * is minted for this call; never reuse one for a different or edited request.
+	 */
+	idempotencyId?: string,
 };
 
 /**
@@ -146,6 +158,8 @@ export class RequestMaker {
 			// A technical failure surfaces immediately instead.
 			retry: 0,
 			credentials: 'same-origin',
+			// Ends each attempt's CLIENT span once the transmission settles, for raw `ky()` callers too.
+			fetch: tracedFetch,
 			hooks: {
 				beforeRequest: [
 					async (_request: KyRequest, options: RequestOptions) => {
@@ -153,6 +167,8 @@ export class RequestMaker {
 							await ensureSession?.();
 						}
 					},
+					// Last, after the session refresh (itself a separate request with its own ID and span).
+					stampRequestTelemetry,
 				],
 				// Every refusal and server failure is announced here, whatever made the call: a typed service,
 				// a command handler posting to a custom route, or a raw `ky()` download that never parses the body.
@@ -200,7 +216,11 @@ export class RequestMaker {
 			if (inflight) return await inflight;
 		}
 
-		const promise = this._sendOnce<T>(method, url, options);
+		// Once per logical call, outside the per-attempt hooks: a dedupKey-collapsed caller shares this
+		// transmission, so it shares its ID and span too.
+		const { operation, idempotencyId, ...kyOptions } = options ?? {};
+		const telemetry = newRequestTelemetryState(operation, idempotencyId);
+		const promise = this._sendOnce<T>(method, url, { ...kyOptions, [REQUEST_TELEMETRY_OPTION]: telemetry });
 		if (dedupKey) {
 			this.#dedupMap.set(dedupKey, promise);
 			promise.finally(() => {
@@ -212,7 +232,7 @@ export class RequestMaker {
 	}
 
 	private async _sendOnce<T>(
-		method: keyof KyInstance, url: Input, options?: RequestOptions,
+		method: keyof KyInstance, url: Input, options?: RequestOptions & WithRequestTelemetry,
 	): Promise<RequestResult<T>> {
 		try {
 			const fn = (this.#api as any)[method] as KyFn;

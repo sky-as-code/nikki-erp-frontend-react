@@ -1,5 +1,7 @@
+import { UI_OPERATIONS } from '@nikkierp/common';
 import { showShellNotice } from '@nikkierp/common/service';
 import { escapeHtml } from '@nikkierp/common/utils';
+import { publishTraced } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import React from 'react';
@@ -80,7 +82,9 @@ function usePublishDelta(command: string | undefined) {
 		}
 		let failure: string | null;
 		try {
-			failure = commandFailureMessage(await commandBus.publish({ name: command, payload }));
+			failure = commandFailureMessage(
+				await publishTraced(commandBus, { name: command, payload }, UI_OPERATIONS.ACTION_INVOKE),
+			);
 		}
 		catch (error) {
 			failure = error instanceof Error ? error.message : String(error);

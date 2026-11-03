@@ -1,11 +1,15 @@
+// Side-effect import, first on purpose: telemetry registers before express or node:http is loaded (BFF-01).
+import './telemetry/register';
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import https from 'node:https';
 
 
 import { attachHosting, createApiApp } from './app';
-import { loadAppConfig } from './common/config/env';
+import { loadAppConfig, loadTelemetryConfig } from './common/config/env';
 import { createContainer } from './common/ioc/container';
+import { createJsonLogger } from './common/logging/logger';
+import { getTelemetry } from './telemetry/provider';
 
 import type { HttpServerConfig } from './common/config/types';
 import type { Express } from 'express';
@@ -38,19 +42,24 @@ async function main(): Promise<void> {
 	else {
 		server.listen(Number(port), onListening);
 	}
+	const { shutdownFlushMs } = loadTelemetryConfig();
 	for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-		process.once(signal, () => shutDown(server));
+		process.once(signal, () => shutDown(server, shutdownFlushMs));
 	}
 }
 
-function shutDown(server: BffServer): void {
-	server.close(() => process.exit(0));
+/** Stop accepting, drain, flush telemetry (bounded), exit; forced out after 5s whatever happens. */
+function shutDown(server: BffServer, flushMs: number): void {
+	server.close(() => {
+		const flushed = getTelemetry()?.shutdown(flushMs) ?? Promise.resolve();
+		void flushed.finally(() => process.exit(0));
+	});
 	// Long-lived streams (NDJSON, HMR) would otherwise keep close() waiting.
 	server.closeAllConnections();
 	setTimeout(() => process.exit(0), 5000).unref();
 }
 
 main().catch((err: unknown) => {
-	console.error('Web BFF failed to start:', err);
+	createJsonLogger().error('Web BFF failed to start', err);
 	process.exit(1);
 });

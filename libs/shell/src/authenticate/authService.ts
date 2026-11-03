@@ -1,3 +1,4 @@
+import { traceOperation, UI_OPERATIONS } from '@nikkierp/common';
 import { ClientErrors } from '@nikkierp/common/types';
 import {
 	dispatchServiceMethod, storeAsyncMethod, storeService, storeSyncMethod,
@@ -7,6 +8,8 @@ import * as t from './types';
 import { shellStore } from '../appState/shellStore';
 import { loadSessionBootstrap } from '../userContext/sessionBootstrap';
 import { userContextService } from '../userContext/userContextService';
+
+import type { TelemetryOperation } from '@nikkierp/common';
 
 
 export const SLICE_NAME = t.SLICE_NAME;
@@ -24,6 +27,8 @@ export type InitAuthServiceParams = {
 export type EnsureSessionOptions = {
 	/** Refreshes even when the stored expiry says the access cookie is still good. */
 	force?: boolean,
+	/** The operation the refresh call belongs to; it joins one only when no refresh is already in flight. */
+	operation?: TelemetryOperation,
 };
 
 // Module-level rather than instance fields: the helpers below are called from outside
@@ -86,7 +91,7 @@ export async function ensureSession(options: EnsureSessionOptions = {}): Promise
 		return true;
 	}
 	try {
-		return await refreshOnce();
+		return await refreshOnce(options.operation);
 	}
 	catch (error) {
 		// A transient refresh failure inside the margin: the current cookie still works.
@@ -125,12 +130,17 @@ function scheduleKeepAlive(): void {
 	}, intervalMs);
 }
 
-/** Refreshes now when the access cookie would lapse before the next tick. */
+/**
+ * Refreshes now when the access cookie would lapse before the next tick. A tick that refreshes is its own
+ * root operation (FE-03), never part of whatever the user is doing; a tick with nothing to do traces nothing.
+ */
 async function keepAliveTick(intervalMs: number): Promise<void> {
 	const expiry = expiryStorage?.get();
 	if (!expiry || hasLapsed(expiry.refreshExpiresAt, 0)) return;
-	const lapsesBeforeNextTick = hasLapsed(expiry.accessExpiresAt, intervalMs + ACCESS_TOKEN_REFRESH_MARGIN_MS);
-	await ensureSession({ force: lapsesBeforeNextTick }).catch(() => false);
+	if (!hasLapsed(expiry.accessExpiresAt, intervalMs + ACCESS_TOKEN_REFRESH_MARGIN_MS)) return;
+	await traceOperation(
+		UI_OPERATIONS.SESSION_KEEP_ALIVE, operation => ensureSession({ force: true, operation }),
+	).catch(() => false);
 }
 
 function hasLapsed(expiresAt: number, marginMs: number): boolean {
@@ -138,22 +148,22 @@ function hasLapsed(expiresAt: number, marginMs: number): boolean {
 }
 
 /** Every request racing past a lapsing cookie shares one refresh call. */
-function refreshOnce(): Promise<boolean> {
-	refreshInFlight ??= restoreSession().finally(() => {
+function refreshOnce(operation?: TelemetryOperation): Promise<boolean> {
+	refreshInFlight ??= restoreSession(operation).finally(() => {
 		refreshInFlight = null;
 	});
 	return refreshInFlight;
 }
 
 /** A thrown error is a technical failure, not a refusal, so it leaves the session state alone. */
-async function restoreSession(): Promise<boolean> {
+async function restoreSession(operation?: TelemetryOperation): Promise<boolean> {
 	const expiry = expiryStorage?.get();
 	if (!expiry || hasLapsed(expiry.refreshExpiresAt, 0)) {
 		markSession('none');
 		return false;
 	}
 	try {
-		onSignInSuccess(await strategy.refreshSession());
+		onSignInSuccess(await strategy.refreshSession(operation));
 		return true;
 	}
 	catch (error) {

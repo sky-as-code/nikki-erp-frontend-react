@@ -1,11 +1,17 @@
+import type { TelemetryOperation } from '@nikkierp/common';
+
+
 export const SLICE_NAME = 'shell.authenticate';
 
 export interface ISignInStrategy {
 	// Commence the sign in process. Each strategy implementation can have its own request and response definitions.
 	startSignIn(params: StartSignInParams): Promise<StartSignInResult>;
 	continueSignIn(params: SignInParams): Promise<SignInResult>;
-	/** Rotates the session cookies; the refresh cookie travels on its own, so there is nothing to send. */
-	refreshSession(): Promise<AuthenticatedSession>;
+	/**
+	 * Rotates the session cookies; the refresh cookie travels on its own, so there is nothing to send.
+	 * `operation` is the self-initiated operation (a keep-alive tick) the call belongs to, if any.
+	 */
+	refreshSession(operation?: TelemetryOperation): Promise<AuthenticatedSession>;
 	signOut(): Promise<void>;
 }
 

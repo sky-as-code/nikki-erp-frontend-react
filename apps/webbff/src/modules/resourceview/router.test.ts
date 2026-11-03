@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resourceViewRouterFactory } from './router';
 import { createSchemaCache } from '../../common/cache/schema_cache';
 import { UpstreamUnavailableError } from '../../common/http/errors';
-import { createConsoleLogger } from '../../common/logging/logger';
+import { createJsonLogger } from '../../common/logging/logger';
 import { createSessionCookies } from '../../common/session/cookies';
 
 import type { ResourceViewRequest, ResourceViewService } from './resource_view_service';
@@ -25,7 +25,7 @@ afterEach(() => {
 function fakeContainer(): Container {
 	return {
 		config: {} as Container['config'],
-		logger: { ...createConsoleLogger(), warn: () => undefined },
+		logger: { ...createJsonLogger(), warn: () => undefined },
 		upstream: {
 			forward: () => undefined,
 			pipeTo: () => Promise.reject(new Error('unused')),

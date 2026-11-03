@@ -4,13 +4,12 @@ import https from 'node:https';
 
 import { sendUpstreamUnavailable, UpstreamUnavailableError } from './errors';
 import { ACCESS_TOKEN_HEADER, buildForwardedHeaders, filterRequestHeaders, filterResponseHeaders } from './headers';
+import { startUpstreamSpan } from './upstream_tracing';
 
 import type { UpstreamConfig } from '../config/types';
 import type { Logger } from '../logging/logger';
 import type { Readable } from 'node:stream';
 import type { TLSSocket } from 'node:tls';
-
-
 
 
 export interface ForwardOptions {
@@ -158,6 +157,8 @@ function openRequest(
 	transport: Transport, method: string, path: string, headers: OutgoingHttpHeaders, extras: OpenRequestExtras = {},
 ): http.ClientRequest {
 	const { baseUrl } = transport.config;
+	// Rewrites `headers` (telemetry injection) before the request is built; `track` ends the CLIENT span.
+	const track = startUpstreamSpan(transport.config, transport.logger, { method, path, headers });
 	const options: http.RequestOptions = {
 		protocol: baseUrl.protocol,
 		hostname: baseUrl.hostname,
@@ -169,6 +170,7 @@ function openRequest(
 		signal: extras.signal,
 	};
 	const request = transport.isHttps ? https.request(options) : http.request(options);
+	track(request);
 	if (extras.timeoutAfterBody) {
 		let responded = false;
 		request.once('response', () => {

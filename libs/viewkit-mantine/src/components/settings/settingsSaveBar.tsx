@@ -1,6 +1,8 @@
 import { Group, Text } from '@mantine/core';
+import { traceOperation, UI_OPERATIONS } from '@nikkierp/common';
 import { ResourceScope } from '@nikkierp/common/entitlements';
 import { Button } from '@nikkierp/ui/components';
+import { publishInOperation } from '@nikkierp/ui/hookhoc';
 import { useTranslate } from '@nikkierp/ui/i18n';
 import { useCommandBus, useEventBus } from '@nikkierp/ui/microApp';
 import { IconDeviceFloppy } from '@tabler/icons-react';
@@ -146,8 +148,11 @@ function useSettingsSave(
 async function publishSave(
 	commandBus: ICommandBus, moduleKey: string, data: SettingsDataContextValue,
 ): Promise<string | null> {
-	const responses = await Promise.all([...buildSavePayload(data)].map(([level, items]) =>
-		commandBus.publish({ name: SETTINGS_SET_COMMAND, payload: { level, moduleKey, items } })));
+	const responses = await traceOperation(UI_OPERATIONS.FORM_SAVE, operation => Promise.all(
+		[...buildSavePayload(data)].map(([level, items]) => publishInOperation(
+			commandBus, { name: SETTINGS_SET_COMMAND, payload: { level, moduleKey, items } }, operation,
+		)),
+	));
 	const failed = responses.find(response => response.error != null);
 	if (failed) return String(failed.error);
 	const rejected = responses.flatMap(response => response.result?.clientErrors ?? []);

@@ -1,4 +1,5 @@
 import { Anchor, Loader, Menu, Tooltip } from '@mantine/core';
+import { UI_OPERATIONS } from '@nikkierp/common';
 import { isAnnouncedServerFailure } from '@nikkierp/common/request';
 import { notifyClientErrors, showShellNotice } from '@nikkierp/common/service';
 import { escapeHtml } from '@nikkierp/common/utils';
@@ -9,6 +10,7 @@ import React from 'react';
 import { LockedAnchor } from './actionColumns/LockedAnchor';
 import { ActionsContext, useActionsContext } from './actionsContext';
 import { useExcelDataTableContext } from './context';
+import { publishTraced } from '../../hookhoc/tracedPublish';
 import { useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 import { Button, LinkButton } from '../Button';
@@ -141,7 +143,7 @@ export async function publishTableCommand(
 	refresh: () => void,
 ): Promise<void> {
 	try {
-		const response = await commandBus.publish({ name: command, payload });
+		const response = await publishTraced(commandBus, { name: command, payload }, UI_OPERATIONS.ACTION_INVOKE);
 		if (response.error) {
 			notifyActionFailed(t, response.error);
 		}
@@ -285,7 +287,8 @@ export function ActionRefresh({ command, iconOnly = false }: ActionRefreshProps)
 	const commandBus = useCommandBus();
 	const onClick = React.useCallback(() => {
 		if (command) {
-			void commandBus.publish({ name: command, payload: searchRequest }).then(refresh);
+			const search = { name: command, payload: searchRequest };
+			void publishTraced(commandBus, search, UI_OPERATIONS.SCREEN_LOAD).then(refresh);
 		}
 		else {
 			refresh();
