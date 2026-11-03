@@ -1,9 +1,16 @@
 import { ClientErrorItem } from '../types/common';
 
+import type { TelemetryOperation } from '../telemetry/operation';
+
 
 export type Command<TPayload = unknown> = {
 	name: string,
 	payload?: TPayload,
+	/**
+	 * The user operation (`traceOperation`) this command serves. The bus hands it on inside the payload
+	 * (`operationOf(payload)`), so the `RestApi` calls made for it become children of the operation's span.
+	 */
+	operation?: TelemetryOperation,
 };
 
 /**

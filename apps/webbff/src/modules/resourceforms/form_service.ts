@@ -1,10 +1,15 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+import { SpanKind, SpanStatusCode } from '@opentelemetry/api';
 import busboy from 'busboy';
 
 import { buildUploadBody } from './upload_body';
 import { buildErrors, ERR_MALFORMED_REQUEST, ERR_UPSTREAM_UNAVAILABLE } from '../../common/http/errors';
+import { getTracer } from '../../telemetry/provider';
 
 import type { UpstreamClient } from '../../common/http/upstream_client';
 import type { Logger } from '../../common/logging/logger';
+import type { Span } from '@opentelemetry/api';
 import type { FileInfo } from 'busboy';
 import type { IncomingMessage } from 'node:http';
 import type { Readable } from 'node:stream';
@@ -15,6 +20,7 @@ export const PAYLOAD_PART = 'payload';
 export const FILE_SIZES_KEY = '__file_sizes';
 export const FILE_FIELD = /^[a-z0-9_]+_file_id$/;
 const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024;
+export const SUBMIT_SPAN_NAME = 'resourceforms.submit';
 
 /** One resource create (`POST /v1/:module/:schema`) or update (`PATCH /v1/:module/:schema/:id`). */
 export interface ResourceFormTarget {
@@ -59,7 +65,38 @@ export function createResourceFormService(upstream: UpstreamClient, logger: Logg
 	return { submit: (target, signal) => submit(deps, target, signal) };
 }
 
-async function submit(deps: Deps, target: ResourceFormTarget, signal: AbortSignal): Promise<ResourceFormResult> {
+/**
+ * One INTERNAL span over the whole save: each upload and the resource write are its CLIENT children, in one trace,
+ * and all carry the request's one `X-Idempotency-ID` (PROP-03).
+ */
+function submit(deps: Deps, target: ResourceFormTarget, signal: AbortSignal): Promise<ResourceFormResult> {
+	return getTracer().startActiveSpan(SUBMIT_SPAN_NAME, { kind: SpanKind.INTERNAL }, async (span) => {
+		try {
+			const result = await submitForm(deps, target, signal);
+			markResult(span, result.status);
+			return result;
+		}
+		catch (err) {
+			span.recordException(err as Error);
+			span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).name });
+			throw err;
+		}
+		finally {
+			span.end();
+		}
+	});
+}
+
+function markResult(span: Span, status: number): void {
+	span.setAttribute('http.response.status_code', status);
+	if (status >= 500) {
+		span.setStatus({ code: SpanStatusCode.ERROR });
+	}
+}
+
+async function submitForm(
+	deps: Deps, target: ResourceFormTarget, signal: AbortSignal,
+): Promise<ResourceFormResult> {
 	const uploadAbort = new AbortController();
 	const onDisconnect = () => uploadAbort.abort();
 	signal.addEventListener('abort', onDisconnect, { once: true });
@@ -79,11 +116,16 @@ async function submit(deps: Deps, target: ResourceFormTarget, signal: AbortSigna
 	}
 }
 
-/** Resolves once busboy has read the whole form, or at once when the browser disconnects. */
+/**
+ * Resolves once busboy has read the whole form, or at once when the browser disconnects. busboy emits from
+ * whatever async context the socket read ran in, so each file part is handled in the submit span's context
+ * (and with its idempotency id), captured here.
+ */
 function readForm(
 	deps: Deps, target: ResourceFormTarget, uploadAbort: AbortController, signal: AbortSignal,
 ): Promise<FormContext> {
 	const context: FormContext = { target, uploadAbort, fileFields: new Set(), uploads: [] };
+	const inSubmitContext = AsyncLocalStorage.snapshot();
 	return new Promise((resolve) => {
 		const done = () => resolve(context);
 		let parser: busboy.Busboy;
@@ -96,7 +138,7 @@ function readForm(
 			return;
 		}
 		parser.on('field', (name, value, info) => onField(context, name, value, info.valueTruncated));
-		parser.on('file', (field, stream, info) => onFile(deps, context, { field, stream, info }));
+		parser.on('file', (field, stream, info) => inSubmitContext(() => onFile(deps, context, { field, stream, info })));
 		parser.on('close', done);
 		parser.on('error', (err) => {
 			fail(context, malformed((err as Error).message));

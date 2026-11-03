@@ -1,5 +1,6 @@
 import { Divider, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { UI_OPERATIONS } from '@nikkierp/common';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { showClientErrorModal } from '@nikkierp/common/service';
 // The wrapper rather than Mantine's Button: it carries the `locked` state, and the design system
@@ -344,7 +345,7 @@ function ResourceDetailCommandActionButton({
 	const tid = useResourceDetailTestAttrs();
 	// The schema's refine guarantees exactly one of `command` / `routePath`, and this component
 	// renders only for the former, so the fallback is unreachable rather than a default.
-	const command = useCommand(action.command ?? '');
+	const command = useCommand(action.command ?? '', { operation: UI_OPERATIONS.ACTION_INVOKE });
 	const { refresh } = useResourceUpdateContext();
 	const onSucceeded = useActionSuccess(action);
 	// Above the early return: hooks cannot be called conditionally.

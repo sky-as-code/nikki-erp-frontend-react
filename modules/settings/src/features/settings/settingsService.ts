@@ -1,3 +1,4 @@
+import { operationOf } from '@nikkierp/common';
 import * as request from '@nikkierp/common/request';
 import { storeAsyncMethod, storeService } from '@nikkierp/ui/appState/store';
 
@@ -37,6 +38,7 @@ export class SettingsService {
 		const orgId = await resolveSettingsOrgId(req);
 		return request.get<GetSettingsResponse>(settingsPath(req.level, req.moduleKey), {
 			searchParams: orgId ? [[ORG_ID_FIELD, orgId]] : [],
+			operation: operationOf(req),
 		});
 	}
 
@@ -46,6 +48,7 @@ export class SettingsService {
 		return request.patch<SetSettingsResponse>(moduleSettingsPath(req.level, req.moduleKey), {
 			// Only the changed items. See `SetSettingsRequest.items`.
 			json: orgId ? { items: req.items, [ORG_ID_FIELD]: orgId } : { items: req.items },
+			operation: operationOf(req),
 		});
 	}
 }

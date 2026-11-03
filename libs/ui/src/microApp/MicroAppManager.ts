@@ -1,9 +1,13 @@
+import { failFetchAttempt, finishFetchAttempt, newFetchCallTelemetry, startFetchAttempt } from '@nikkierp/common';
+
 import { RegisterReducerFn } from './MicroAppStateProvider';
 import {
 	HostServices, MicroAppBundle, MicroAppBundleInitFn, MicroAppBundleInitResult, MicroAppConfig,
 	MicroAppMetadata, MicroAppSlug,
 } from './types';
 import { ImportResult } from '../types/miscs';
+
+import type { FetchCallTelemetry } from '@nikkierp/common';
 
 
 export type RetryOptions = {
@@ -204,22 +208,13 @@ export class MicroAppManager {
 			return undefined;
 		}
 
-		const config = await this.invokeWithRetry<MicroAppConfig>(
-			async () => {
-				const response = await fetch(app.configUrl!, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
-				if (!response.ok) {
-					throw new Error(response.statusText);
-				}
-				return response.json();
-			},
+		// One logical request however many attempts it takes: one idempotency ID and one trace, a span per attempt.
+		const call = newFetchCallTelemetry();
+		const configUrl = app.configUrl;
+		return this.invokeWithRetry<MicroAppConfig>(
+			() => fetchConfigAttempt(configUrl, call),
 			`Config fetch for ${app.slug}`,
 		);
-		return config;
 	}
 
 	private async invokeWithRetry<T>(
@@ -278,4 +273,24 @@ function schemaPrefixesOf(app: MicroAppMetadata): readonly string[] {
 		return [app.slug];
 	}
 	return Array.isArray(app.schemaPrefix) ? app.schemaPrefix : [app.schemaPrefix];
+}
+
+/** One attempt of a config fetch; its span ends once the body is read, or on the first failure. */
+async function fetchConfigAttempt(url: string, call: FetchCallTelemetry): Promise<MicroAppConfig> {
+	const headers = new Headers({ 'Content-Type': 'application/json' });
+	const span = startFetchAttempt('GET', url, headers, call);
+	let response: Response | undefined;
+	try {
+		response = await fetch(url, { method: 'GET', headers });
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+		const config = await response.json() as MicroAppConfig;
+		finishFetchAttempt(span, response);
+		return config;
+	}
+	catch (error) {
+		failFetchAttempt(span, error, response);
+		throw error;
+	}
 }

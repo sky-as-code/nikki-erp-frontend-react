@@ -1,3 +1,7 @@
+import {
+	failFetchAttempt, finishFetchAttempt, newFetchCallTelemetry, startFetchAttempt,
+} from '@nikkierp/common';
+
 import { STREAM_EVENT_HEARTBEAT, STREAM_EVENT_NOTIFICATION_CREATED } from './types';
 import { STREAM_PATH } from '../../constants';
 
@@ -149,13 +153,26 @@ export class NotificationStream {
 		const abort = new AbortController();
 		this.#abort = abort;
 
-		const response = await fetch(this.#streamUrl(), {
-			method: 'GET',
-			headers: { Accept: 'application/x-ndjson' },
-			credentials: 'same-origin',
-			signal: abort.signal,
-		});
+		// One CLIENT span and one new idempotency ID per connection attempt: each connect is its own logical
+		// request, never part of a UI operation. The span lasts as long as the stream; chunks get none.
+		const url = this.#streamUrl();
+		const headers = new Headers({ Accept: 'application/x-ndjson' });
+		const span = startFetchAttempt('GET', url, headers, newFetchCallTelemetry());
+		let response: Response | undefined;
+		try {
+			response = await fetch(url, { method: 'GET', headers, credentials: 'same-origin', signal: abort.signal });
+			const refused = await this.#consume(response);
+			finishFetchAttempt(span, response, this.#closed);
+			return refused;
+		}
+		catch (error) {
+			failFetchAttempt(span, error, response);
+			throw error;
+		}
+	}
 
+	/** Reads one connected response to its end; resolves `true` when the server refused the session. */
+	async #consume(response: Response): Promise<boolean> {
 		if (response.status === 401) return true;
 		if (!response.ok || !response.body) {
 			throw new Error(`notification stream failed: ${response.status}`);

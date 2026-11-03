@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { createApiApp } from '../../app';
 import { createContainer } from '../../common/ioc/container';
-import { createConsoleLogger } from '../../common/logging/logger';
+import { createJsonLogger } from '../../common/logging/logger';
 
 import type { AppConfig } from '../../common/config/types';
 import type { AddressInfo } from 'node:net';
@@ -101,7 +101,7 @@ function payloadPart(payload: Record<string, unknown>): string {
 
 beforeAll(async () => {
 	const upstreamPort = await listen(upstream);
-	const logger = { ...createConsoleLogger(), warn: () => undefined };
+	const logger = { ...createJsonLogger(), warn: () => undefined };
 	bff = http.createServer(createApiApp(createContainer(buildConfig(upstreamPort), { logger })));
 	bffPort = await listen(bff);
 });

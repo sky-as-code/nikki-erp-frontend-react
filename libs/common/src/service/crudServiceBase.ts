@@ -2,6 +2,7 @@ import { ok, ServiceResult } from '../commandBus';
 import * as dyn from '../dynamicModel';
 import { EventBus, eventTopic, IEventBus } from '../eventBus';
 import { withOrgId } from './orgContext';
+import { carryOperation } from '../telemetry/operationCarrier';
 
 
 
@@ -87,8 +88,8 @@ export abstract class CrudServiceBase {
 		const ids = 'ids' in request ? request.ids : [request.id];
 		return this.emitEvent('delete', async () => {
 			const results = await Promise.all(
-				ids.map(id => this.withSchema(async schema =>
-					schema.restApi.delete(await this.withOrgScope(schema, { id }), primaryResourceId))),
+				ids.map(id => this.withSchema(async schema => schema.restApi.delete(
+					await this.withOrgScope(schema, carryOperation(request, { id })), primaryResourceId))),
 			);
 			return mergeDeleteResults(results);
 		});
@@ -176,10 +177,11 @@ export abstract class CrudServiceBase {
 	 * through - hand-written services, the `GenericCrudService` the command bus falls back to,
 	 * and with it every metadata-driven view-engine page.
 	 */
-	protected withOrgScope<TRequest extends object>(
+	protected async withOrgScope<TRequest extends object>(
 		schema: dyn.SchemaPack, request: TRequest,
 	): Promise<TRequest> {
-		return withOrgId(request, schema, this.schemaName, this.#orgBound);
+		// The copy `withOrgId` may make drops the payload's telemetry operation, so it is carried over.
+		return carryOperation(request, await withOrgId(request, schema, this.schemaName, this.#orgBound));
 	}
 
 	/**

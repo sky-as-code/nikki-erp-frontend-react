@@ -34,6 +34,9 @@ response headers within `NIKKI_BFF_UPSTREAM_TIMEOUT_MS` →
 | Browser → upstream | `content-type`, `content-length`, `transfer-encoding`, `accept`, `accept-language`, `range`, `if-none-match`, `user-agent`, every `x-nikki-*`; the BFF adds `X-Forwarded-For/Proto/Host`, `Host` (below) and `X-NIKKI-ACCESSTOKEN` from the cookie | browser-sent `x-nikki-accesstoken`, `authorization`, `cookie`, hop-by-hop headers, everything else |
 | Upstream → browser | status, `content-type`, `content-length`, `transfer-encoding`, `content-disposition`, `cache-control`, `etag`, `accept-ranges`, `content-range`, `x-accel-buffering`, every `x-nikki-*` | `set-cookie`, hop-by-hop headers, everything else |
 
+Telemetry headers (`traceparent`, `tracestate`, `baggage`, `x-idempotency-id`, `x-trace-id`) are never copied in
+either direction: see *Telemetry*.
+
 No `Authorization` header is sent upstream: there is no service-to-service token yet (logged as a problem).
 
 Upstream `Host`: the incoming `Host` when `NIKKI_BFF_UPSTREAM_FORWARD_HOST=true` (production — the tenant subdomain
@@ -103,13 +106,60 @@ Resolution order (first value wins): process env → `{NIKKI_BFF_CLIENT_ROOT_PAT
 | `NIKKI_BFF_UPSTREAM_CLIENT_CERT_FILE` / `_KEY_FILE` | empty | Client certificate for upstream mTLS; relative paths resolve against the client root |
 | `NIKKI_BFF_UPSTREAM_TLS_INSECURE` | `true` in `.env.default`, unset in Docker | Skip upstream certificate verification (logs a warning). Never in production |
 | `NIKKI_BFF_COOKIE_SECURE` | `auto` | `auto` = `Secure` when `NIKKI_BFF_HTTPS_ENABLED=true`; or `true`/`false` |
-| `NIKKI_BFF_CORS_ORIGINS` | empty | Comma-separated origins allowed cross-origin with credentials (dev only). Empty = same-origin only |
+| `NIKKI_BFF_CORS_ORIGINS` | empty | Comma-separated origins allowed cross-origin with credentials (dev only). Empty = same-origin only. Allowed request headers are explicit (`content-type`, `accept`, `accept-language`, `range`, `if-none-match`, `traceparent`, `tracestate`, `baggage`, `x-idempotency-id`); exposed: `X-Trace-ID`, `X-Idempotency-ID` |
+| `OTEL_SERVICE_NAME` | `coremart-bff` | `service.name` of spans and log records |
+| `OTEL_RESOURCE_ATTRIBUTES` | empty | `k=v,…` resource attributes; `service.version` and `deployment.environment.name` (else `NODE_ENV`) are read from it. `service.instance.id` is always generated per process (hostname-pid-random) |
+| `OTEL_PROPAGATORS` | `tracecontext,baggage` | Subset of `tracecontext`, `baggage` |
+| `OTEL_TRACES_SAMPLER` / `_ARG` | `parentbased_traceidratio` / `1.0` | Also `parentbased_always_on`, `parentbased_always_off`, `traceidratio`, `always_on`, `always_off`. Production suggestion: ratio `0.1` |
+| `OTEL_TRACES_EXPORTER` | `none` | `none`, `otlp` or `console` (development only). `otlp` without an endpoint exports nothing (warning at boot) |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/json` | `http/json` (POST `{endpoint}/v1/traces`) or `grpc`. `http/protobuf` is sent as JSON: no protobuf exporter is shipped |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | empty | OTLP receiver base URL. `OTEL_EXPORTER_OTLP_HEADERS` is read by the exporter itself |
+| `OTEL_BSP_MAX_QUEUE_SIZE`, `_MAX_EXPORT_BATCH_SIZE`, `_SCHEDULE_DELAY`, `_EXPORT_TIMEOUT` | `2048`, `512`, `5000`, `30000` | Bounded batch export (ms for the last two); a full queue drops spans |
+| `NIKKI_BFF_TELEMETRY_BAGGAGE_ALLOWLIST` | empty | Baggage keys kept on extract and inject; empty drops all. At most 16 entries / 2048 bytes, kept in header order until a limit is hit |
+| `NIKKI_BFF_TELEMETRY_PROPAGATION_HOST_ALLOWLIST` | empty = hostname of `NIKKI_BFF_UPSTREAM_BASE_URL` | Comma-separated hostnames that receive `traceparent`/`tracestate`/`baggage`/`X-Idempotency-ID` |
+| `NIKKI_BFF_TELEMETRY_SHUTDOWN_FLUSH_MS` | `3000` | Bound of the span flush on SIGTERM/SIGINT, capped at `4000` (the process is forced out after 5s) |
+
+Every `OTEL_<NAME>` above also reads a non-empty `NIKKI_BFF_OTEL_<NAME>` first, for a host whose `OTEL_*` belong to
+another service.
 
 **Local CA.** The backend's local certificate (`extapi-local.coremart.local`, SAN `*.extapi-local.coremart.local`)
 is signed by the intermediate `coremart-server-ca-nonprod`, itself signed by `coremart-root-ca-nonprod`, both in the
 backend repo under `scripts/cert/pki/{server-ca,root-ca}/`. That repo is a separate checkout with no fixed location
 relative to this one, so the default is `NIKKI_BFF_UPSTREAM_TLS_INSECURE=true`. To verify instead, list both CA files
 (Node needs the whole chain) with absolute paths, or paths relative to the client root, in `.env.local` — see `.env.sample`.
+
+## Telemetry
+
+OpenTelemetry (W3C Trace Context) and the `X-Idempotency-ID` contract (UUIDv7). `src/telemetry/register.ts` is the
+first import of `src/main.ts`: one `NodeTracerProvider` per process with `AsyncLocalStorageContextManager`, W3C
+TraceContext + the allowlisting baggage propagator, and a parent-based sampler. Export is off unless configured; with
+export off span ids, sampling flags and propagation still work. No auto-instrumentation is installed (every span is
+created by hand), so the exporter's own requests are never traced.
+
+- **Ingress** (`src/telemetry/http_middleware.ts`, first middleware): one SERVER span per request, child of a valid
+  inbound `traceparent` (else a new root; a malformed, zero, forbidden-version or repeated one is ignored, never a
+  4xx). Name `METHOD route` (`/api/*` for proxied paths, `/*` for hosting), no query string. Every answer carries
+  `X-Trace-ID`; only 5xx marks the span as an error; the span ends exactly once on finish or close.
+- **`X-Idempotency-ID`** (on `/api/**`, after CORS): a valid UUIDv7 is kept, lowercased; none at all → one is
+  generated; anything else (blank, other version, nil, URN, braces, comma list, header sent twice) → 400
+  `[{type:'validation',key:'common:err_invalid_idempotency_id',field:'X-Idempotency-ID',message}]`, no handler runs
+  and the value is neither echoed nor logged. The effective id is answered in `X-Idempotency-ID` and kept in
+  AsyncLocalStorage. A caller that wants the same id across its own retries must send it (the BFF cannot tell a
+  retry from a new request).
+- **Upstream calls** (`src/common/http/upstream_tracing.ts`): one CLIENT span per call (forward, pipeTo, streamTo,
+  requestJson), ended once on body end, failure, timeout or abort (an abort is not an error). Inherited telemetry
+  headers are always stripped; the propagator and `X-Idempotency-ID` are injected only for allowlisted hosts. The
+  BFF never follows redirects. An upstream `X-Idempotency-ID` that differs is logged, never adopted.
+- **Multipart saves** (`resourceforms`): one INTERNAL span `resourceforms.submit` over every upload and the resource
+  write; all share the trace and the request's one `X-Idempotency-ID`, each with its own CLIENT span. Streaming is
+  unchanged.
+- **Errors**: a global Express error handler answers 500 `common:err_internal_server`, records the exception on the
+  span and logs with the request's context.
+- **Logs** (`src/common/logging/logger.ts`): one JSON record per line (INFO → stdout, WARN/ERROR → stderr) with
+  `timestamp`, `severity`, `message`, `trace_id`, `span_id`, `idempotency_id` (all `null` outside a
+  request), `service.name`, `tenant_id` and
+  `org_id` (always `null`: the BFF has no authenticated organization). Caller arguments go under `data`.
+- **Shutdown**: `server.close` → bounded provider flush → exit, within the 5s forced exit.
 
 ## Scripts
 
@@ -127,8 +177,10 @@ Every React package's `dev` script boots this BFF with `ts-node .../webbff/src/m
 ## Code layout
 
 ```
-src/main.ts                     bootstrap: config → container → app → listen
-src/app.ts                      assembly: CSRF guard, /api/v0, module routers (extension point), generic proxy, hosting
+src/main.ts                     bootstrap: telemetry → config → container → app → listen
+src/app.ts                      assembly: tracing, CORS, idempotency id, CSRF guard, /api/v0, module routers
+                                (extension point), generic proxy, error handler, hosting
+src/telemetry/                  provider bootstrap, baggage allowlist, ingress middlewares, idempotency id store
 src/common/config/              env chain and typed AppConfig
 src/common/ioc/container.ts     Container: config, logger, upstream client, session cookies, schema cache
 src/common/cache/               SchemaCache: in-memory TTL cache with in-flight de-duplication

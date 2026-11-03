@@ -1,3 +1,4 @@
+import { UI_OPERATIONS } from '@nikkierp/common';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { useCommand } from '@nikkierp/ui/hookhoc';
 import { defineComponent } from '@nikkierp/viewengine/metadata';
@@ -96,8 +97,8 @@ export function ResourceUpdateProvider(
 	const commands = props.standardActionCommands;
 	const { id } = useParams();
 	const { schemaPack } = useResourceDetailContext();
-	const getByIdCmd = useCommand<dyn.RestGetOneResponse<any>>(commands.getById ?? '');
-	const updateCmd = useCommand<dyn.RestMutateResponse>(commands.update ?? '');
+	const getByIdCmd = useCommand<dyn.RestGetOneResponse<any>>(commands.getById ?? '', { operation: UI_OPERATIONS.SCREEN_LOAD });
+	const updateCmd = useCommand<dyn.RestMutateResponse>(commands.update ?? '', { operation: UI_OPERATIONS.FORM_SAVE });
 	const publishGet = getByIdCmd.publish;
 	const publishUpdate = updateCmd.publish;
 

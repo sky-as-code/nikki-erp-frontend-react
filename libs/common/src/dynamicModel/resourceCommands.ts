@@ -1,5 +1,6 @@
 import { Command, CommandHandler, ICommandBus, ServiceResult } from '../commandBus';
 import { CrudServiceBase, GenericCrudService } from '../service/crudServiceBase';
+import { carryOperation } from '../telemetry/operationCarrier';
 
 import type { RestFiles } from './restapi';
 
@@ -79,7 +80,7 @@ export function splitResourceFiles(payload: Record<string, any>): [Record<string
 		return [payload, undefined];
 	}
 	const { [RESOURCE_FILES_KEY]: files, ...rest } = payload;
-	return [rest, files as RestFiles];
+	return [carryOperation(payload, rest), files as RestFiles];
 }
 
 const services = new Map<string, CrudServiceBase>();

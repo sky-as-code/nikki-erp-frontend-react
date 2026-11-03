@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { publishTraced } from './tracedPublish';
 import { useCommandBus } from '../microApp';
 
 import type { CommandBusResponse } from '@nikkierp/common/commandBus';
@@ -21,6 +22,14 @@ export type UseCommandReturn<TData, TError = unknown> = {
 	isPending: boolean,
 };
 
+export type UseCommandOptions = {
+	/**
+	 * Traces each publish as one user operation of this fixed name (`UI_OPERATIONS`): a screen load, a save,
+	 * a custom action. Leave it out for a command that is no user operation of its own.
+	 */
+	operation?: string,
+};
+
 /**
  * Publishes a command through the Shell-hosted command bus. `isPending` becomes
  * `true` as soon as the command is published and resolves to `false` once a
@@ -30,8 +39,9 @@ export type UseCommandReturn<TData, TError = unknown> = {
  * technical failure sets `error`.
  */
 export function useCommand<TData = unknown, TError = unknown>(
-	commandName: string,
+	commandName: string, options?: UseCommandOptions,
 ): UseCommandReturn<TData, TError> {
+	const operationName = options?.operation;
 	const commandBus = useCommandBus();
 	const [data, setData] = React.useState<TData | null>(null);
 	const [clientErrors, setClientErrors] = React.useState<ClientErrorItem[]>([]);
@@ -53,7 +63,7 @@ export function useCommand<TData = unknown, TError = unknown>(
 		setClientErrors([]);
 		setError(null);
 		setIsPending(true);
-		const response = await commandBus.publish<TData>({ name: commandName, payload });
+		const response = await publishTraced<TData>(commandBus, { name: commandName, payload }, operationName);
 		// Superseded by a newer call or unmounted: still hand the response back to the
 		// caller, but do not write stale state.
 		if (!isMountedRef.current || callId !== callIdRef.current) {
@@ -64,7 +74,7 @@ export function useCommand<TData = unknown, TError = unknown>(
 		setError(response.error as TError | null);
 		setIsPending(false);
 		return response;
-	}, [commandBus, commandName]);
+	}, [commandBus, commandName, operationName]);
 
 	return { publish, data, clientErrors, error, isPending };
 }

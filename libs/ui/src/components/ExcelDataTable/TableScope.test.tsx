@@ -112,6 +112,7 @@ describe('ExcelDataTable updateScope=table writes and modes', () => {
 		fireEvent.blur(cellInput('a', 'kind'));
 		await waitFor(() => expect(bus.publish).toHaveBeenCalledWith({
 			name: 'lines.update', payload: { id: 'a', etag: 'ea', kind: 'q' },
+			operation: expect.objectContaining({ name: 'ui.form.save' }),
 		}));
 		await waitFor(() => expect(onRefresh).toHaveBeenCalled());
 	});

@@ -1,9 +1,11 @@
 import { notifications } from '@mantine/notifications';
+import { UI_OPERATIONS } from '@nikkierp/common';
 import React from 'react';
 
 import { useExcelDataTableContext } from './context';
 import { buildRowDeletePayload, deletableRowId, rowDeleteOutcome } from './rowDeleteModel';
 import { rowIdOf } from './types';
+import { publishTraced } from '../../hookhoc/tracedPublish';
 import { useTranslate } from '../../i18n';
 import { useCommandBus } from '../../microApp/MicroAppProvider';
 
@@ -58,7 +60,9 @@ function useRowDeleteWrite(item: SearchItem): () => Promise<RowDeleteOutcome> {
 		const rowId = deletableRowId(item);
 		if (sinks.deleteCommand && rowId !== undefined) {
 			const payload = buildRowDeletePayload(rowId);
-			return rowDeleteOutcome(await commandBus.publish<unknown>({ name: sinks.deleteCommand, payload }));
+			return rowDeleteOutcome(await publishTraced<unknown>(
+				commandBus, { name: sinks.deleteCommand, payload }, UI_OPERATIONS.ACTION_INVOKE,
+			));
 		}
 		if (!sinks.deleteCommand && sinks.onDeleted) {
 			try {

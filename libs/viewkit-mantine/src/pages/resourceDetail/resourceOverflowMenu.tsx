@@ -1,4 +1,5 @@
 import { Menu } from '@mantine/core';
+import { UI_OPERATIONS } from '@nikkierp/common';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import { Button, useLockedItemProps } from '@nikkierp/ui/components';
 import { useCommand } from '@nikkierp/ui/hookhoc';
@@ -36,8 +37,8 @@ export function ResourceDetailOverflowMenu({
 	const backLink = useBackLinkTarget();
 	const t = useTranslate(useResourceDetailTranslationNs());
 	const tid = useResourceDetailTestAttrs();
-	const deleteCmd = useCommand(commands.delete ?? '');
-	const archiveCmd = useCommand(commands.archive ?? '');
+	const deleteCmd = useCommand(commands.delete ?? '', { operation: UI_OPERATIONS.ACTION_INVOKE });
+	const archiveCmd = useCommand(commands.archive ?? '', { operation: UI_OPERATIONS.ACTION_INVOKE });
 	const isBusy = disabled || deleteCmd.isPending || archiveCmd.isPending;
 	const { deleteLocked, archiveLocked } = useOverflowLocks(commands);
 

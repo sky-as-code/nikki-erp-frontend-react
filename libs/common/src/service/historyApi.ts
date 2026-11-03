@@ -32,7 +32,8 @@ export type ResourceHistoryItem = {
 	/** `create`, `update`, `delete`, `archive`, `unarchive`, `link`, `unlink`, `get`, `search` or a custom action code. */
 	action: string,
 	created_at: string,
-	request_id?: string | null,
+	/** OpenTelemetry trace id: groups every entry one request, job run or message wrote. */
+	trace_id?: string | null,
 	actor: ResourceHistoryActor,
 	changes: ResourceHistoryChange[],
 	/** Fields the caller may not read: their change values arrive as null. */

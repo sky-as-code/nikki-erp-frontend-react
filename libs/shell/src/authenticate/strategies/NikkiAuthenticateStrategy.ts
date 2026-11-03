@@ -2,6 +2,8 @@ import * as api from '@nikkierp/common/request';
 
 import * as t from '../types';
 
+import type { TelemetryOperation } from '@nikkierp/common';
+
 
 /**
  * This strategy invokes NikkiERP Authenticate Module.
@@ -42,9 +44,9 @@ export class NikkiAuthenticateStrategy implements t.ISignInStrategy {
 	}
 
 	/** The BFF reads the refresh cookie, rotates both cookies and answers with their new expiries. */
-	public async refreshSession(): Promise<t.AuthenticatedSession> {
+	public async refreshSession(operation?: TelemetryOperation): Promise<t.AuthenticatedSession> {
 		const response = api.unwrapResult(
-			await api.post<SessionExpiryApiResponse>('v1/iam/signin/refresh', { noAuth: true }),
+			await api.post<SessionExpiryApiResponse>('v1/iam/signin/refresh', { noAuth: true, operation }),
 		);
 		return toSession(response);
 	}

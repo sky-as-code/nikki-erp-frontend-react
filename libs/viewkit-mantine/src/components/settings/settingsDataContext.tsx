@@ -1,10 +1,13 @@
+import { traceOperation, UI_OPERATIONS } from '@nikkierp/common';
 import { ResourceScope } from '@nikkierp/common/entitlements';
 import { useHasEntitlement } from '@nikkierp/ui/components';
+import { publishInOperation } from '@nikkierp/ui/hookhoc';
 import { useCommandBus } from '@nikkierp/ui/microApp';
 import { PageContextProvider } from '@nikkierp/viewengine/render';
 import React from 'react';
 
 import type { SettingLevel } from './props';
+import type { CommandBusResponse, ICommandBus } from '@nikkierp/common/commandBus';
 import type { ModelSchemaField } from '@nikkierp/common/dynamicModel';
 
 
@@ -192,10 +195,7 @@ export function SettingsDataProvider(
 		setIsLoading(true);
 		setLoadError(null);
 
-		Promise.all(wanted.map(level => commandBus.publish<GetSettingsResponse>({
-			name: SETTINGS_GET_COMMAND,
-			payload: { level, moduleKey },
-		}))).then((responses) => {
+		loadSettingLevels(commandBus, wanted, moduleKey).then((responses) => {
 			if (!isMounted) return;
 
 			const next = new Map<string, SettingItemData>();
@@ -272,3 +272,13 @@ export function SettingsDataProvider(
 }
 
 export { SETTINGS_GET_COMMAND, SETTINGS_SET_COMMAND };
+
+/** One screen load: every wanted level read in parallel, under one operation. */
+function loadSettingLevels(
+	commandBus: ICommandBus, levels: SettingLevel[], moduleKey: string,
+): Promise<Array<CommandBusResponse<GetSettingsResponse>>> {
+	return traceOperation(UI_OPERATIONS.SCREEN_LOAD, operation => Promise.all(levels.map(level =>
+		publishInOperation<GetSettingsResponse>(
+			commandBus, { name: SETTINGS_GET_COMMAND, payload: { level, moduleKey } }, operation,
+		))));
+}

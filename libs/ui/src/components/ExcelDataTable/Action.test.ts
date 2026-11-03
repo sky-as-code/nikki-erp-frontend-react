@@ -89,7 +89,10 @@ describe('publishActionCommand', () => {
 		const publish = vi.fn(() => Promise.resolve({ result: { data: null, clientErrors: [] }, error: null }));
 		const refresh = vi.fn();
 		await publishActionCommand({ publish } as never, 'iam.iam_role.delete_many', ['1', '2'], t, refresh);
-		expect(publish).toHaveBeenCalledWith({ name: 'iam.iam_role.delete_many', payload: { ids: ['1', '2'] } });
+		expect(publish).toHaveBeenCalledWith({
+			name: 'iam.iam_role.delete_many', payload: { ids: ['1', '2'] },
+			operation: expect.objectContaining({ name: 'ui.action.invoke' }),
+		});
 		expect(notice.notifyClientErrors).toHaveBeenCalledWith(t, []);
 		expect(notice.showShellNotice).not.toHaveBeenCalled();
 		expect(refresh).toHaveBeenCalledOnce();
