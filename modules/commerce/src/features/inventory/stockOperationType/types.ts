@@ -14,6 +14,10 @@ export type StockOperationType = {
 	id: string,
 	name?: dyn.ModelSchemaLangJson,
 	operation_code?: StockOperationCode,
+	/** The type's code in its transfers' numbers, `{warehouse code}/{prefix}/{n}`. Unique per org; set on create only. */
+	sequence_prefix?: string,
+	/** The warehouse whose code opens the transfer number. Set on create only. */
+	warehouse_id?: string,
 	reservation_method?: StockReservationMethod,
 	reserve_before_days?: number,
 	backorder_policy?: StockBackorderPolicy,

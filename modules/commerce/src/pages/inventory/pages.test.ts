@@ -604,6 +604,13 @@ describe('Stock transfer page', () => {
 		}
 	});
 
+	it('asks for no transfer number on create: the server issues it, and the detail shows it', () => {
+		const { createNodes, childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
+
+		expect(formBlocks(createNodes[0])[0].fields).not.toContain('transfer_number');
+		expect(formBlocks(childrenNodes[0])[0].fields).toContain('transfer_number');
+	});
+
 	it('opens Policies collapsed on the detail page and expanded on create', () => {
 		const { createNodes, childrenNodes } = fieldsDetailProps(buildStockTransferPages()[0]);
 
@@ -881,7 +888,7 @@ describe('Warehouse and location detail layout', () => {
 		expect(props.titleLvl2).toEqual({ schemaField: 'canonical_name' });
 		for (const nodes of [props.createNodes, props.childrenNodes]) {
 			expect(formBlocks(nodes[0])).toEqual([
-				{ header: 'form.identification', fields: ['name', 'description', 'barcode'] },
+				{ header: 'form.identification', fields: ['name', 'barcode', 'description'] },
 				{
 					header: 'form.locationTopology',
 					fields: ['location_type', 'parent_location_id', 'warehouse_id'],
@@ -925,10 +932,12 @@ describe('Stock operation type page', () => {
 
 	it('lays out the type as identity, default locations, reservation and policies, without org_id', () => {
 		const { createNodes, childrenNodes } = fieldsDetailProps(buildStockOperationTypePages()[0]);
+		// The type holds no Sequence definition: both modes show the same identity fields.
+		const identity = ['name', 'operation_code', 'sequence_prefix', 'warehouse_id'];
 
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(formBlocks(nodes[0])).toEqual([
-				{ header: 'form.generalInformation', fields: ['name', 'operation_code'] },
+				{ header: 'form.generalInformation', fields: identity },
 				{
 					header: 'form.defaultLocations',
 					fields: ['default_source_location_id', 'default_destination_location_id'],

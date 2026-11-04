@@ -127,6 +127,15 @@ describe('ownPropertySectionSchema', () => {
 			.toThrow();
 	});
 
+	it('takes a locked field as a record condition instead, and refuses both or neither', () => {
+		const when = { field: 'first_issued_at', operator: 'exists' };
+		const parse = (lock: object) => ownPropertySectionSchema.parse({ fields: ['code'], lockedFields: { code: lock } });
+
+		expect(parse({ when, hint: 'locked' }).lockedFields).toEqual({ code: { when, hint: 'locked' } });
+		expect(() => parse({ when, unless: 'x', hint: 'locked' })).toThrow();
+		expect(() => parse({ hint: 'locked' })).toThrow();
+	});
+
 	it('takes visibleWhen as one condition or a list that must all hold', () => {
 		const visibleWhen = {
 			receiving_location_id: { field: 'incoming_flow', operator: 'in', value: ['two_step', 'three_step'] },

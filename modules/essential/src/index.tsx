@@ -15,12 +15,14 @@ import { reducer } from './appState';
 import * as c from './constants';
 import { registerCurrencyCommands } from './features/currency/commands';
 import { registerLanguageCommands } from './features/language/commands';
+import { registerSequenceCommands } from './features/sequence/commands';
 import { registerUomCommands } from './features/uom/commands';
 import { registerUomCatCommands } from './features/uomcat/commands';
 import { buildEssentialMenu } from './menu';
 import { buildLanguagePages } from './pages/language';
 import { ModuleManagementPage } from './pages/ModuleManagement';
 import { OrgHomePage } from './pages/OrgHomePage';
+import { buildSequencePages } from './pages/sequence';
 import { SettingsWidget } from './pages/SettingsWidget';
 import { buildUomPages } from './pages/uom';
 import { buildUomCatPages } from './pages/uomcat';
@@ -44,8 +46,10 @@ function Main(props: MicroAppProps) {
 function MicroAppInner(props: MicroAppProps): React.ReactNode {
 	const engine = useViewEngine();
 	const pages = React.useMemo(
-		// The currency pages are mounted by Settings only (`settings/essential/essential_currency`).
-		() => [...buildUomPages(), ...buildUomCatPages(), ...buildLanguagePages()]
+		// The currency pages are mounted by Settings only (`settings/essential/essential_currency`). The sequence
+		// pages' home is Settings › Technical too, but they are served here as well, at their schema names, because
+		// an edge field links a definition at `/essential/essential_sequence_definition/:id`.
+		() => [...buildUomPages(), ...buildUomCatPages(), ...buildLanguagePages(), ...buildSequencePages()]
 			.map(page => compilePage(page, engine)),
 		[engine],
 	);
@@ -107,6 +111,7 @@ const bundle: MicroAppBundle = {
 		registerUomCatCommands(host.commandBus);
 		registerLanguageCommands(host.commandBus);
 		registerCurrencyCommands(host.commandBus);
+		registerSequenceCommands(host.commandBus);
 
 		return {
 			domType,
@@ -129,5 +134,14 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.CURRENCY_SCHEMA_NAME,
 		resourcePath: c.CURRENCY_RESOURCE_PATH,
+	}, {
+		schemaName: c.SEQUENCE_DEFINITION_SCHEMA_NAME,
+		resourcePath: c.SEQUENCE_DEFINITION_RESOURCE_PATH,
+	}, {
+		schemaName: c.SEQUENCE_COUNTER_SCHEMA_NAME,
+		resourcePath: c.SEQUENCE_COUNTER_RESOURCE_PATH,
+	}, {
+		schemaName: c.SEQUENCE_ISSUANCE_SCHEMA_NAME,
+		resourcePath: c.SEQUENCE_ISSUANCE_RESOURCE_PATH,
 	}]);
 }

@@ -68,8 +68,13 @@ function buildStockOperationTypeDetailProps() {
 /**
  * Shared by both form modes. A transfer copies the type's policies when it is created, so changing
  * them here affects only the transfers created afterwards.
+ *
+ * The prefix and the warehouse make the type's transfer numbers (`{warehouse code}/{prefix}/{n}`), so both are
+ * chosen on create and never change. The number itself comes from the organization's one transfer Sequence
+ * definition, on a counter of the type's own; the type holds no definition.
  */
 function buildStockOperationTypeFieldsSection(): ComponentNode {
+	const numbering = ['sequence_prefix', 'warehouse_id'];
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
@@ -77,7 +82,7 @@ function buildStockOperationTypeFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
-			fields: ['name', 'operation_code'],
+			fields: ['name', 'operation_code', ...numbering],
 		}),
 		resourceFormColumnNode({
 			header: 'form.defaultLocations',

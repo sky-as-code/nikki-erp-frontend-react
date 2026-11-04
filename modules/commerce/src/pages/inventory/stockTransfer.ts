@@ -88,13 +88,17 @@ function buildStockTransferDetailProps() {
  */
 function buildStockTransferSections(page: 'create' | 'detail'): ComponentNode[] {
 	return [
-		buildStockTransferFieldsSection(),
+		buildStockTransferFieldsSection(page === 'create'),
 		buildStockTransferPoliciesSection(page === 'create'),
 		buildStockTransferMovesSection(),
 	];
 }
 
-function buildStockTransferFieldsSection(): ComponentNode {
+/**
+ * The transfer number is issued by the server on create (`{warehouse code}/{operation type prefix}/{n}`), so the
+ * create form has no input for it; an existing transfer shows it read-only.
+ */
+function buildStockTransferFieldsSection(creating: boolean): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
@@ -103,7 +107,7 @@ function buildStockTransferFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
 			fields: [
-				'transfer_number', 'operation_code', 'operation_type_id', 'origin_reference',
+				...(creating ? [] : ['transfer_number']), 'operation_code', 'operation_type_id', 'origin_reference',
 			],
 			// The code picks the operation: on create the backend resolves the org's operation type
 			// for it when none is chosen, so the select only offers the types of the chosen code.
