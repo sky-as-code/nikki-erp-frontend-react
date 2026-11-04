@@ -109,6 +109,7 @@ function buildStockScrapFieldsSection(): ComponentNode {
 				'product_variant_id', 'quantity', 'base_uom_id',
 				'source_location_id', 'scrap_location_id',
 			],
+			relationSearch: c.directTransferLocationSearch('source_location_id', 'scrap_location_id'),
 		}),
 		resourceFormColumnNode({
 			// Empty until a lot, package or owner narrows which goods are scrapped â€” a read-mode

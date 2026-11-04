@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { pickerInitialRequest } from './RelationPickerModal';
 import { fetchedRecordOf, relationSelectionMode } from './RelationSelectField';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
@@ -31,5 +32,19 @@ describe('fetchedRecordOf', () => {
 
 		expect(fetchedRecordOf({ item, meta: {} } as never)).toBe(item);
 		expect(fetchedRecordOf(null)).toBeUndefined();
+	});
+});
+
+describe('pickerInitialRequest', () => {
+	it('opens the picker filtered by the initial graph, which the table then shows as editable', () => {
+		const graph = { if: ['accept_direct_transfers', '=', true] };
+
+		expect(pickerInitialRequest(JSON.stringify(graph))).toEqual({
+			page: 0, size: 50, search_name: 'default', graph,
+		});
+	});
+
+	it('opens unfiltered without one', () => {
+		expect(pickerInitialRequest('').graph).toBeUndefined();
 	});
 });

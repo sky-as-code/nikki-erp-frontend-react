@@ -109,6 +109,7 @@ function buildStockMoveFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.movement',
 			fields: ['source_location_id', 'destination_location_id', 'final_location_id', 'priority'],
+			relationSearch: c.directTransferLocationSearch('source_location_id', 'destination_location_id'),
 		}),
 		resourceFormColumnNode({
 			header: 'form.scheduling',

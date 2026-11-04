@@ -87,6 +87,9 @@ function buildStockOperationTypeFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.defaultLocations',
 			fields: ['default_source_location_id', 'default_destination_location_id'],
+			relationSearch: c.directTransferLocationSearch(
+				'default_source_location_id', 'default_destination_location_id',
+			),
 		}),
 		resourceFormColumnNode({
 			header: 'form.reservation',

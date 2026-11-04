@@ -82,6 +82,7 @@ function buildPutawayRuleFieldsSection(): ComponentNode {
 			// above: a putaway rule is not a way to move goods between warehouses.
 			header: 'form.locationTopology',
 			fields: ['source_location_id', 'destination_location_id', 'sublocation_strategy'],
+			relationSearch: c.directTransferLocationSearch('source_location_id', 'destination_location_id'),
 		}),
 		resourceFormColumnNode({
 			// A criterion left empty matches anything, which is what makes a general rule general.

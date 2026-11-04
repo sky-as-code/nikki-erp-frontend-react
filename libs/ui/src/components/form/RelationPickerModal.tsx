@@ -47,6 +47,11 @@ export type RelationPickerModalProps = {
 	 * in them, and cannot be removed from the picker.
 	 */
 	baseGraph?: dyn.SearchGraph,
+	/**
+	 * Conditions the picker opens filtered by, shown in its filter panel where the user may change or
+	 * remove them — a default narrowing rather than a rule, unlike `baseGraph`. Read on each opening.
+	 */
+	initialGraph?: dyn.SearchGraph,
 	testId?: string,
 };
 
@@ -77,7 +82,7 @@ export function RelationPickerModal(props: RelationPickerModalProps): React.Reac
 	const { pack } = useDynamicModel(destSchemaName);
 	const modelSchema = pack?.modelSchema;
 	const [pendingItems, setPendingItems] = React.useState<SearchItem[]>([]);
-	const picker = usePickerSearch(destSchemaName, props.opened, props.baseGraph);
+	const picker = usePickerSearch(destSchemaName, props.opened, props.baseGraph, props.initialGraph);
 	const { searchData, searchRequest, setSearchRequest } = picker;
 	// Without this the table falls back to the raw field name.
 	const translateFieldName = React.useCallback(
@@ -117,6 +122,7 @@ export function RelationPickerModal(props: RelationPickerModalProps): React.Reac
 						modelSchema={modelSchema}
 						data={searchData}
 						initialSearchRequest={searchRequest}
+						initialGraph={props.initialGraph}
 						onSearchRequestChange={setSearchRequest}
 						translateFieldName={translateFieldName}
 						selectionMode={props.selectionMode}
@@ -153,6 +159,14 @@ export function RelationPickerModal(props: RelationPickerModalProps): React.Reac
 	);
 }
 
+/**
+ * The picker's first request, filtered by the serialized `initialGraph` when there is one. Serialized so
+ * the reset on opening follows its content: a caller rebuilding an equal graph each render resets nothing.
+ */
+export function pickerInitialRequest(initialKey: string): dyn.RestSearchRequest {
+	return initialKey ? { ...INITIAL_REQUEST, graph: JSON.parse(initialKey) as dyn.SearchGraph } : INITIAL_REQUEST;
+}
+
 type PickerSearch = {
 	searchData: SearchData | null,
 	searchRequest: dyn.RestSearchRequest,
@@ -162,21 +176,23 @@ type PickerSearch = {
 /** Runs the referenced schema's paged search while the picker is open. */
 function usePickerSearch(
 	destSchemaName: string, opened: boolean, baseGraph: dyn.SearchGraph | undefined,
+	initialGraph: dyn.SearchGraph | undefined,
 ): PickerSearch {
 	const searchCommandName = destSchemaName ? dyn.resourceCommands(destSchemaName).SEARCH : '';
 	const search = useCommand<dyn.RestSearchResponse<SearchItem>>(searchCommandName);
 	const publish = search.publish;
-	const [searchRequest, setSearchRequest] = React.useState<dyn.RestSearchRequest>(INITIAL_REQUEST);
+	const initialKey = initialGraph ? JSON.stringify(initialGraph) : '';
+	const [searchRequest, setSearchRequest] = React.useState(() => pickerInitialRequest(initialKey));
 	const [cachedData, setCachedData] = React.useState<SearchData | null>(null);
 
 	// Reopening starts clean, so a picker left mid-page does not open already paged in, or briefly
 	// show the previous schema's rows against this one's columns.
 	React.useEffect(() => {
 		if (opened) {
-			setSearchRequest(INITIAL_REQUEST);
+			setSearchRequest(pickerInitialRequest(initialKey));
 			setCachedData(null);
 		}
-	}, [opened, destSchemaName]);
+	}, [opened, destSchemaName, initialKey]);
 
 	/**
 	 * What has already been asked for, so the same query is never published twice.

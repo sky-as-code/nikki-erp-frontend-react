@@ -100,6 +100,7 @@ function buildStockQuantBalanceColumns(): ComponentNode[] {
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
 			fields: ['product_variant_id', 'location_id', 'base_uom_id'],
+			relationSearch: c.directTransferLocationSearch('location_id'),
 		}),
 		resourceFormColumnNode({
 			// available_quantity is derived on the server; it has no column and is never sent back.

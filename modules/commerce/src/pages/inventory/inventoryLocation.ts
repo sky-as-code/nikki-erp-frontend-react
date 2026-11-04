@@ -39,6 +39,9 @@ function buildInventoryLocationListProps() {
 		translationNs: c.INVENTORY_MODULE,
 		linkField: 'id',
 		searchCommand: InventoryLocationCommands.SEARCH,
+		// Managed locations (a vending machine's slots) belong to their owner's own screens; the user
+		// may still remove the condition to see them.
+		initialGraph: { if: ['managed_by_type', 'not_set'] },
 		createEnabled: true,
 		deleteCommand: InventoryLocationCommands.DELETE,
 		archiveCommand: InventoryLocationCommands.SET_IS_ARCHIVED,
@@ -108,10 +111,13 @@ function buildInventoryLocationFieldsSection(): ComponentNode {
 			// customer or shared transit location), so it is shown but never edited.
 			header: 'form.locationTopology',
 			fields: ['location_type', 'parent_location_id', 'warehouse_id'],
+			relationSearch: c.directTransferLocationSearch('parent_location_id'),
 		}),
 		resourceFormColumnNode({
 			header: 'form.storagePolicy',
-			fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
+			fields: [
+				'is_replenishment_destination', 'accept_direct_transfers', 'storage_category_id', 'removal_strategy',
+			],
 		}),
 	]);
 }

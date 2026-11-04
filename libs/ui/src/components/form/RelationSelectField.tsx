@@ -127,6 +127,7 @@ export function RelationSelectField(props: RelationSelectFieldProps): React.Reac
 								selectionMode={options.selectionMode}
 								selectedIds={field.value ? [String(field.value)] : []}
 								baseGraph={options.scopeGraph}
+								initialGraph={options.initialGraph}
 								testId={fieldTestId}
 								onSelect={(items: SearchItem[]) => {
 									field.onChange(String(items[0].id));
@@ -151,6 +152,7 @@ type RelationOptions = {
 	/** How many referenced records the field holds, from its relation's cardinality. */
 	selectionMode: SelectionMode,
 	scopeGraph?: dyn.SearchGraph,
+	initialGraph?: dyn.SearchGraph,
 };
 
 /**
@@ -184,6 +186,7 @@ function useRelationOptions(fieldName: string, term: string, localize: LocalizeF
 		destSchemaName,
 		selectionMode: relationSelectionMode(relation),
 		scopeGraph: scope?.graph,
+		initialGraph: scope?.initialGraph,
 	};
 }
 
