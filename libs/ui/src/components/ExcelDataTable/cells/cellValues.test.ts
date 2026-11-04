@@ -100,8 +100,8 @@ describe('resolveEdgeLabel', () => {
 
 	it('localizes a lang-json label, falling back to another language before giving up', () => {
 		const row = { product_template_id: '01H', product_template: { name: { 'en-US': 'Cola', 'vi-VN': 'Nước ngọt' } } };
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'vi-VN')).toBe('Nước ngọt');
-		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'fr-FR')).toBe('Cola');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'en-US')).toBe('Cola');
+		expect(resolveEdgeLabel(row, 'product_template_id', variantSchema, edgeLabels, 'fr-FR')).toBe('Nước ngọt');
 	});
 
 	it('translates a `$ref` record label against the module owning the edge schema', () => {

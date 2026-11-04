@@ -2,7 +2,7 @@ import { ActionIcon } from '@mantine/core';
 import * as dyn from '@nikkierp/common/dynamicModel';
 import React from 'react';
 
-import { propagateCurrentLangToEmpty } from './langJson';
+import { propagateCurrentLangToEmpty, SYSTEM_DEFAULT_LANGUAGE } from './langJson';
 import { MultiLangInputModal } from './MultiLangInputModal';
 import { useI18n, useTranslate } from '../../i18n';
 import { Input } from '../Input/Input';
@@ -42,7 +42,7 @@ export function useSupportedLngs(): string[] {
 	const raw = i18n.options.supportedLngs;
 	return React.useMemo(() => {
 		if (!Array.isArray(raw)) {
-			return ['en-US'];
+			return [SYSTEM_DEFAULT_LANGUAGE];
 		}
 		return raw.filter((lng): lng is string => typeof lng === 'string' && lng !== 'cimode');
 	}, [raw]);

@@ -11,8 +11,10 @@ describe('resolveLangJson', () => {
 		expect(resolveLangJson({ $ref: 'unknown', 'vi-VN': 'Xanh' }, 'vi-VN', translate)).toBe('Xanh');
 	});
 
-	it('falls back from the active language to en-US, then to any text, then to empty', () => {
-		expect(resolveLangJson({ 'en-US': 'Blue', 'vi-VN': 'Xanh' }, 'vi-VN')).toBe('Xanh');
+	it('falls back from the active language to vi-VN, then to any text, then to empty', () => {
+		expect(resolveLangJson({ 'en-US': 'Blue', 'vi-VN': 'Xanh' }, 'en-US')).toBe('Blue');
+		expect(resolveLangJson({ 'en-US': '', 'vi-VN': 'Xanh' }, 'en-US')).toBe('Xanh');
+		expect(resolveLangJson({ 'de-DE': 'Blau', 'en-US': 'Blue', 'vi-VN': 'Xanh' }, 'fr-FR')).toBe('Xanh');
 		expect(resolveLangJson({ 'en-US': 'Blue', 'vi-VN': '' }, 'vi-VN')).toBe('Blue');
 		expect(resolveLangJson({ 'ja-JP': '', 'vi-VN': 'Xanh' }, 'fr-FR')).toBe('Xanh');
 		expect(resolveLangJson({ $ref: 'unknown' }, 'en-US', translate)).toBe('');

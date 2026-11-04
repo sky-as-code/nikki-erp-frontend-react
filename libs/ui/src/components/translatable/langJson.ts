@@ -4,17 +4,17 @@ import type { ModelSchemaLangJson } from '@nikkierp/common/dynamicModel';
 
 
 /**
- * The language a LangJSON value falls back to when it has no text in the active one. The client
- * has no tenant default language (i18n deliberately declares no `fallbackLng`), so the platform
- * default is the one language every schema label is guaranteed to carry.
+ * The platform default language (the backend's `model.DefaultLanguageCode`): what a LangJSON value
+ * falls back to when it has no text in the active one, and the UI language when nothing chose one.
+ * The client has no tenant default language (i18n deliberately declares no `fallbackLng`).
  */
-export const SYSTEM_DEFAULT_LANGUAGE = 'en-US';
+export const SYSTEM_DEFAULT_LANGUAGE = 'vi-VN';
 
 /** Translates a `$ref` key; undefined (or `''`) when it has no translation, so resolution falls through. */
 export type LangJsonRefTranslator = (key: string) => string | undefined;
 
 /**
- * A LangJSON value as text: `$ref` translation → active language → `en-US` → first non-empty
+ * A LangJSON value as text: `$ref` translation → active language → `vi-VN` → first non-empty
  * text → `''`. The last step keeps a record holding only a language the UI is not showing
  * readable, since a label in the wrong language still names it better than nothing does.
  */
