@@ -9,6 +9,7 @@ import {
 	useFieldOccurrence, useWatchedFormValues,
 } from '@nikkierp/ui/components/form';
 import { type LocalizeFn, useLocalize, useTranslate } from '@nikkierp/ui/i18n';
+import { evaluateCondition } from '@nikkierp/viewengine/metadata';
 import { IconLock } from '@tabler/icons-react';
 import React from 'react';
 
@@ -110,7 +111,13 @@ export function lockedFieldHint(
 	lockedFields: LockedFields, field: string, mode: FieldVisibilityMode, fieldValues: Record<string, unknown>,
 ): string | undefined {
 	const lock = lockedFields?.[field];
-	return lock && mode === 'update' && fieldValues[lock.unless] === false ? lock.hint : undefined;
+	if (!lock || mode !== 'update') {
+		return undefined;
+	}
+	const locked = lock.when
+		? evaluateCondition(lock.when, fieldValues)
+		: lock.unless !== undefined && fieldValues[lock.unless] === false;
+	return locked ? lock.hint : undefined;
 }
 
 /**

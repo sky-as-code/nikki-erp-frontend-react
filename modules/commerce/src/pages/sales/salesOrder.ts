@@ -139,7 +139,8 @@ function buildSalesOrderDetailProps() {
 			alternativeEnds: ['cancelled'],
 		}),
 		titleLvl1: { schemaField: 'order_number' },
-		titleLvl2: { schemaField: 'status' },
+		// The code the customer quotes (kiosk screen, receipt); the status strip already shows the status.
+		titleLvl2: { schemaField: 'public_reference' },
 		backLinkTitle: { linkHref: '../' },
 		// Read and update show the same fields in the same columns; an uneditable one reads `-`.
 		stableFieldLayout: true,
@@ -213,7 +214,7 @@ function buildSalesOrderFieldsSection(): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.order',
-			fields: ['order_number', 'sales_channel_id', 'sales_point_id',
+			fields: ['order_number', 'public_reference', 'sales_channel_id', 'sales_point_id',
 				'customer_reference', 'currency_code'],
 		}),
 		resourceFormColumnNode({

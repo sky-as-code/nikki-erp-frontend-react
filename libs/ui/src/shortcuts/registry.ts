@@ -62,6 +62,12 @@ const REGISTRY_KEY = Symbol.for('nikki.shortcuts');
  */
 const IMPLICIT_SCOPE_SELECTOR = '[role="dialog"][aria-modal="true"]';
 
+/**
+ * A held Alt repeats its keydown well inside this window on Windows, so the badges stay; a keyup the
+ * page never sees (Alt+Tab away) stops the repeats and the badges go.
+ */
+const ALT_HOLD_TIMEOUT_MS = 1000;
+
 
 /** Whether a registered element is on screen, so its badge can be drawn and its key can fire. */
 export function isShortcutTargetShown(element: HTMLElement): boolean {
@@ -145,6 +151,7 @@ class WindowShortcutRegistry implements ShortcutRegistry {
 	private installed = false;
 	/** Alt went down and a shortcut ran, or badges were drawn, before it came back up. */
 	private altConsumed = false;
+	private altHoldTimer: number | null = null;
 
 	private readonly target: Window;
 
@@ -242,6 +249,7 @@ class WindowShortcutRegistry implements ShortcutRegistry {
 	}
 
 	private hide = (): void => {
+		this.clearAltHoldTimer();
 		this.altConsumed = false;
 		this.emit(false, false);
 	};
@@ -250,6 +258,7 @@ class WindowShortcutRegistry implements ShortcutRegistry {
 		if (isAltKey(event)) {
 			this.altConsumed = this.altConsumed || this.entries.size > 0;
 			this.emit(true, false);
+			this.restartAltHoldTimer();
 			return;
 		}
 		if (!event.altKey) {
@@ -288,6 +297,18 @@ class WindowShortcutRegistry implements ShortcutRegistry {
 		}
 		this.hide();
 	};
+
+	private restartAltHoldTimer(): void {
+		this.clearAltHoldTimer();
+		this.altHoldTimer = this.target.setTimeout(this.hide, ALT_HOLD_TIMEOUT_MS);
+	}
+
+	private clearAltHoldTimer(): void {
+		if (this.altHoldTimer !== null) {
+			this.target.clearTimeout(this.altHoldTimer);
+			this.altHoldTimer = null;
+		}
+	}
 
 	private onVisibilityChange = (): void => {
 		if (this.target.document.visibilityState === 'hidden') {

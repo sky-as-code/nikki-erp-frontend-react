@@ -24,6 +24,7 @@ export type StockShippingPolicy = 'partial' | 'all_at_once';
  */
 export type StockTransfer = {
 	id: string,
+	/** Issued by the server on create as `{warehouse code}/{operation type prefix}/{n}`; never typed by a user. */
 	transfer_number?: string,
 	operation_type_id?: string,
 	operation_code?: StockOperationCode,

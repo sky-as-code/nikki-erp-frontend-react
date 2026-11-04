@@ -11,8 +11,11 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 export type SalesOrder = {
 	id: string,
 
-	/** Allocated by the backend on create. Fiscal systems read this sequence. */
+	/** Allocated by the backend on create (Sequence `sales.order`). Fiscal systems read this sequence. */
 	order_number?: string,
+
+	/** Non-guessable code a customer quotes (kiosk, receipt), allocated by the backend on create. */
+	public_reference?: string,
 
 	/** Derived from the sales point at creation, so a till cannot claim a sale happened elsewhere. */
 	sales_channel_id?: string,

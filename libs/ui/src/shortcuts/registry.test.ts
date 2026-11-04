@@ -146,6 +146,36 @@ describe('conflicts', () => {
 	});
 });
 
+describe('missed Alt keyup', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('hides 1 s after the last Alt keydown (the Alt+Tab case)', () => {
+		registry.subscribe(() => undefined);
+		pressAlt('keydown');
+		vi.advanceTimersByTime(999);
+		expect(isVisible()).toBe(true);
+		vi.advanceTimersByTime(1);
+		expect(isVisible()).toBe(false);
+	});
+
+	it('keeps the hints while Alt keydowns keep repeating', () => {
+		registry.subscribe(() => undefined);
+		for (let i = 0; i < 5; i++) {
+			pressAlt('keydown');
+			vi.advanceTimersByTime(500);
+		}
+		expect(isVisible()).toBe(true);
+		pressAlt('keyup');
+		expect(isVisible()).toBe(false);
+		expect(vi.getTimerCount()).toBe(0);
+	});
+});
+
 describe('visibility', () => {
 	it('shows on Alt down and hides on Alt up', () => {
 		registry.register(addButton('Save'), 'S');

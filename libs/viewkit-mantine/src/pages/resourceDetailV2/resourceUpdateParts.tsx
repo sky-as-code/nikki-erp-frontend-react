@@ -421,7 +421,7 @@ function useActionSuccess(action: ResourceDetailExtraAction): (response: unknown
 	const navigate = useNavigate();
 	return (response) => {
 		if (action.successNotice) {
-			notifications.show({ color: 'green', message: t(action.successNotice) });
+			notifications.show({ color: 'green', message: t(action.successNotice, resultDataOf(response)) });
 		}
 		const createdId = (response as { result?: { data?: { id?: unknown } } } | null)?.result?.data?.id;
 		if (action.openResult && typeof createdId === 'string' && createdId !== '') {
@@ -430,6 +430,12 @@ function useActionSuccess(action: ResourceDetailExtraAction): (response: unknown
 		}
 		return false;
 	};
+}
+
+/** The command's result data, which a `successNotice` may interpolate (`{{formatted_value}}`). */
+function resultDataOf(response: unknown): Record<string, unknown> | undefined {
+	const data = (response as { result?: { data?: unknown } } | null)?.result?.data;
+	return data !== null && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : undefined;
 }
 
 /**

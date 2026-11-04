@@ -75,12 +75,18 @@ export const ownPropertySectionSchema = z.object({
 	/**
 	 * v2 only. Fields the record itself says may no longer change: in update mode `field` renders as a
 	 * disabled input with `hint` (an i18n key in the page's namespace) under it whenever the record's
-	 * boolean `unless` is `false`. Locked, never hidden; the server enforces the rule either way.
+	 * boolean `unless` is `false`, or, for a record that states the lock as something other than a
+	 * boolean (a timestamp set once, say), whenever the record matches the condition `when`. Exactly
+	 * one of the two. Locked, never hidden; the server enforces the rule either way.
 	 */
 	lockedFields: z.record(z.string(), z.object({
-		unless: z.string().min(1),
+		unless: z.string().min(1).optional(),
+		when: conditionExpressionSchema.optional(),
 		hint: z.string().min(1),
-	}).strict()).optional(),
+	}).strict().refine(
+		lock => (lock.unless === undefined) !== (lock.when === undefined),
+		{ message: 'Exactly one of `unless` or `when` is required' },
+	)).optional(),
 	/**
 	 * v2 only. Fields this page never edits although the schema allows it, because another page
 	 * owns the change: in update mode they render as read-only text, like a server-owned field.
@@ -185,7 +191,10 @@ export const resourceDetailExtraActionSchema = z.object({
 	 * fire immediately, which is what every existing action does.
 	 */
 	prompt: actionPromptSchema.optional(),
-	/** An i18n key shown as a success notice once the command succeeds. */
+	/**
+	 * An i18n key shown as a success notice once the command succeeds, interpolated with the fields of
+	 * the command's result data (`{{formatted_value}}`) for an action whose answer is the point.
+	 */
 	successNotice: z.string().min(1).optional(),
 	/**
 	 * The command creates another record of this resource (a copy): on success the page opens it,
