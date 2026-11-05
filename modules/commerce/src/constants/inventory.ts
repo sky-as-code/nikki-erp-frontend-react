@@ -28,6 +28,19 @@ export const PUTAWAY_RULE_SCHEMA_NAME = 'inventory_putaway_rule';
 export const STOCK_OPERATION_TYPE_SCHEMA_NAME = 'inventory_stock_operation_type';
 export const STOCK_QUANT_SCHEMA_NAME = 'inventory_stock_quant';
 
+/**
+ * A location select offers only locations that take goods moved by hand: a vending slot is filled by
+ * its machine's own flow. Editable in the "Browse all" picker, since the server validates either way.
+ */
+export const DIRECT_TRANSFER_LOCATION_SCOPE = { graph: { if: ['accept_direct_transfers', '=', true] } };
+
+/** `relationSearch` narrowing each of these location fields by `DIRECT_TRANSFER_LOCATION_SCOPE`. */
+export function directTransferLocationSearch(
+	...fields: string[]
+): Record<string, typeof DIRECT_TRANSFER_LOCATION_SCOPE> {
+	return Object.fromEntries(fields.map(field => [field, DIRECT_TRANSFER_LOCATION_SCOPE]));
+}
+
 // Stock movement. See backend .../modules/inventory/domain/models/{stock_transfer,stock_move,
 // stock_move_line,stock_move_dependency}.go.
 export const STOCK_TRANSFER_SCHEMA_NAME = 'inventory_stock_transfer';

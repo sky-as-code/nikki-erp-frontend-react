@@ -76,6 +76,7 @@ function buildStockMoveLineFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			header: 'form.movement',
 			fields: ['source_location_id', 'destination_location_id'],
+			relationSearch: c.directTransferLocationSearch('source_location_id', 'destination_location_id'),
 		}),
 		resourceFormColumnNode({
 			// A read-mode field with no value is hidden, so an untracked line does not show this block.

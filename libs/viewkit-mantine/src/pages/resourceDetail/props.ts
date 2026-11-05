@@ -1,6 +1,8 @@
 import { componentNodeSchema, conditionExpressionSchema } from '@nikkierp/viewengine/schema';
 import { z } from 'zod';
 
+import { initialGraphSchema } from '../../components/resourceTable/props';
+
 
 export const schemaFieldSpecSchema = z.object({ schemaField: z.string().min(1) });
 export const linkSpecSchema = z.object({ linkHref: z.string() });
@@ -103,16 +105,19 @@ export const ownPropertySectionSchema = z.object({
 		z.union([conditionExpressionSchema, z.array(conditionExpressionSchema).min(1)]),
 	).optional(),
 	/**
-	 * v2 only. Narrows a relation select of this block: `{ field: { searchField?, matchFormFields? } }`.
+	 * v2 only. Narrows a relation select of this block: `{ field: { searchField?, matchFormFields?, graph? } }`.
 	 * `searchField` is the target-schema field the typed term matches instead of its record label
 	 * (needed when that label is a `function` computed field). `matchFormFields` is
 	 * `{ targetField: formField }`: while the form's `formField` holds a value, only target records
-	 * whose `targetField` equals it are offered; an empty source narrows nothing. Presentation only:
-	 * the server validates the reference either way.
+	 * whose `targetField` equals it are offered; an empty source narrows nothing. `graph` is a static
+	 * search graph on the target schema: it narrows the dropdown too, but the "Browse all" picker
+	 * opens with it as filter conditions the user may remove, while `matchFormFields` stays locked
+	 * there. Presentation only: the server validates the reference either way.
 	 */
 	relationSearch: z.record(z.string(), z.object({
 		searchField: z.string().min(1).optional(),
 		matchFormFields: z.record(z.string(), z.string().min(1)).optional(),
+		graph: initialGraphSchema.optional(),
 	}).strict()).optional(),
 });
 

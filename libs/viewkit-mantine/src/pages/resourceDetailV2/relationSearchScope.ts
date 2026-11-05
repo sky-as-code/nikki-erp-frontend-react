@@ -27,7 +27,11 @@ export function buildRelationSearchScopes(
 			.filter(([, formField]) => hasValue(values[formField]))
 			.map(([targetField, formField]) => ({ if: [targetField, '=', values[formField]] }));
 		const graph: dyn.SearchNode | undefined = conditions.length > 1 ? { and: conditions } : conditions[0];
-		return [field, { searchField: entry.searchField, graph }];
+		return [field, {
+			searchField: entry.searchField,
+			graph,
+			initialGraph: entry.graph as dyn.SearchNode | undefined,
+		}];
 	}));
 }
 

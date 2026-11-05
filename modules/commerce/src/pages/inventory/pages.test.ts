@@ -895,10 +895,32 @@ describe('Warehouse and location detail layout', () => {
 				},
 				{
 					header: 'form.storagePolicy',
-					fields: ['is_replenishment_destination', 'storage_category_id', 'removal_strategy'],
+					fields: [
+						'is_replenishment_destination', 'accept_direct_transfers', 'storage_category_id',
+						'removal_strategy',
+					],
 				},
 			]);
 		}
+	});
+});
+
+describe('Inventory location scoping', () => {
+	/** INV-001: managed locations are left out by default, as a condition the user may remove. */
+	it('lists unmanaged locations by default', () => {
+		const props = listPropsOf(buildInventoryLocationPages()[0]);
+
+		expect(props?.initialGraph).toEqual({ if: ['managed_by_type', 'not_set'] });
+	});
+
+	/** INV-004: every location select offers only locations that take direct transfers. */
+	it('offers only direct-transfer locations in location selects', () => {
+		const scope = { graph: { if: ['accept_direct_transfers', '=', true] } };
+		const movement = fieldsDetailProps(buildStockTransferPages()[0]).childrenNodes[0].children?.[1];
+		const topology = fieldsDetailProps(buildInventoryLocationPages()[0]).childrenNodes[0].children?.[1];
+
+		expect(movement?.props?.relationSearch).toEqual({ source_location_id: scope, destination_location_id: scope });
+		expect(topology?.props?.relationSearch).toEqual({ parent_location_id: scope });
 	});
 });
 

@@ -29,12 +29,12 @@ export class SalesOrderService extends StoreCrudServiceBase {
 	}
 
 	/**
-	 * Validates, reprices, redeems vouchers, then freezes the order.
+	 * Validates, reprices, commits promotions and consumes their usage, then freezes the order.
 	 *
 	 * Check `pending` in the response before acting on success: confirm reserves stock through
 	 * Inventory, and a refusal there does not fail the confirm, so a caller that dispenses on a bare
 	 * 200 hands over goods no reservation covers. Re-confirming is refused rather than treated as
-	 * idempotent, since a silent second success would redeem the voucher twice.
+	 * idempotent, since a silent second success would consume promotion usage twice.
 	 */
 	public confirm(request: NotedActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.postAction(request, c.CONFIRM_PATH);
@@ -55,11 +55,28 @@ export class SalesOrderService extends StoreCrudServiceBase {
 	}
 
 	/**
-	 * `code` is the printed string, not an id; the backend resolves it. Everything else is derived
-	 * from the order rather than accepted from the caller, so a till cannot claim eligibility.
+	 * `code` is the printed string, not an id; the backend resolves it. A second code for a promotion
+	 * that already has one is refused with `voucher_replace_required` unless `replace_existing` is set.
+	 * Answers the fresh `PromotionQuote`.
 	 */
 	public applyVoucher(request: ApplyVoucherRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
 		return this.postAction(request, c.APPLY_VOUCHER_PATH);
+	}
+
+	public removeVoucher(request: RemoveVoucherRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.postAction(request, c.REMOVE_VOUCHER_PATH);
+	}
+
+	/** Persists the draft reward choice, or a decline, so it survives a reload (BR-R12). */
+	public selectPromotionReward(
+		request: SelectPromotionRewardRequest,
+	): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.postAction(request, c.SELECT_PROMOTION_REWARD_PATH);
+	}
+
+	/** Reprices and persists the draft; consumes no usage, so a quote never holds a slot. */
+	public previewPromotions(request: OrderActionRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.postAction(request, c.PREVIEW_PROMOTIONS_PATH);
 	}
 
 	/**
@@ -128,10 +145,24 @@ export type ReasonedActionRequest = OrderActionRequest & {
 export type NotedActionRequest = OrderActionRequest & {
 	confirmation_note?: string,
 	cancellation_note?: string,
+	/** The quote the cashier accepted; a mismatch answers `requote_required` with the fresh quote. */
+	accepted_calculation_reference?: string,
 };
 
 export type ApplyVoucherRequest = OrderActionRequest & {
 	code: string,
+	replace_existing?: boolean,
+};
+
+export type RemoveVoucherRequest = OrderActionRequest & {
+	promotion_id: string,
+};
+
+/** `reward_id` picks a reward; `decline` refuses the promotion's benefit (e.g. a gift) instead. */
+export type SelectPromotionRewardRequest = OrderActionRequest & {
+	promotion_id: string,
+	reward_id?: string,
+	decline?: boolean,
 };
 
 /** An absent line id means order-level. */

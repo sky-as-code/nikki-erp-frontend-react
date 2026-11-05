@@ -2,12 +2,11 @@ import * as dyn from '@nikkierp/common/dynamicModel';
 import { RequestMaker } from '@nikkierp/common/request';
 import { translateClientError, TranslatableClientError } from '@nikkierp/common/types';
 import i18next, { i18n, InitOptions } from 'i18next';
-import LanguageDetector, { DetectorOptions } from 'i18next-browser-languagedetector';
 import HttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
 import * as React from 'react';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
-import { resolveLangJson } from '../components/translatable/langJson';
+import { resolveLangJson, SYSTEM_DEFAULT_LANGUAGE } from '../components/translatable/langJson';
 
 
 export { stripTranslationTags } from './translationTags';
@@ -31,6 +30,7 @@ export function initI18n(
 		return;
 	}
 
+	const supported = supportedLngs ?? ['en-US', 'vi-VN'];
 	const options: InitOptions & HttpBackendOptions = {
 		debug,
 		// No fallback language, so the missing translation will be surfaced
@@ -38,7 +38,7 @@ export function initI18n(
 		// `load: 'all'` every lookup also tried `en`, each rejected by `supportedLngs` with a warning.
 		fallbackLng: false,
 		load: 'currentOnly',
-		supportedLngs: supportedLngs ?? ['en-US', 'vi-VN'],
+		supportedLngs: supported,
 		ns: ['common'],
 		fallbackNS: ['common'],
 		// A failed load leaves the namespace "loaded with error": `useTranslation` reports ready
@@ -59,23 +59,26 @@ export function initI18n(
 
 	i18next
 		.use(HttpBackend)
-		.use(initReactI18next);
+		.use(initReactI18next)
+		.init<InitOptions & HttpBackendOptions>({
+			...options,
+			lng: resolveInitialLanguage(lng, supported),
+		});
+}
 
-	if (lng) {
-		i18next
-			.init<InitOptions & HttpBackendOptions>({
-				...options,
-				lng: lng!,
-			});
+/**
+ * The language to boot with. `lng` is the stored one: the account's after sign-in, else what the
+ * user picked in the sign-in page's switcher (local settings survive sign-out). With neither, the
+ * system default -- not the browser's language, which made an English browser open the sign-in page
+ * in en-US. A list lacking the default falls to its first entry, since with no `fallbackLng` an
+ * unsupported code would render every key raw.
+ */
+export function resolveInitialLanguage(lng: string | null | undefined, supportedLngs: string[]): string {
+	if (lng) return lng;
+	if (supportedLngs.length === 0 || supportedLngs.includes(SYSTEM_DEFAULT_LANGUAGE)) {
+		return SYSTEM_DEFAULT_LANGUAGE;
 	}
-	else {
-		i18next
-			.use(LanguageDetector)
-			.init<InitOptions & HttpBackendOptions>({
-				...options,
-				detection: buildDetectionOptions(),
-			});
-	}
+	return supportedLngs[0];
 }
 
 /**
@@ -110,14 +113,6 @@ function buildBackendOptions(): HttpBackendOptions {
 			}
 		},
 	};
-}
-
-function buildDetectionOptions(): DetectorOptions {
-	return {
-		order: [
-			'navigator', // browser language
-		],
-	} as DetectorOptions;
 }
 
 /**

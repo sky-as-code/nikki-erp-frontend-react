@@ -65,13 +65,17 @@ export function resolveFieldLabel(field: ModelSchemaField, language: string, tra
 	return resolveLangJson(label, language) || field.name;
 }
 
-/** Every text a header may use for this field, in the order the requirement resolves labels. */
+/**
+ * Every text a header may use for this field: the label in the active language, the system default and then
+ * every other language (a spreadsheet need not be in the UI language), and the field name.
+ */
 export function fieldMatchKeys(field: ModelSchemaField, language: string, translate: TranslateKeyFn): string[] {
 	const label = field.label ?? {};
 	const ref = label[LangJsonRefKey];
+	const otherLabels = Object.entries(label).filter(([code]) => code !== LangJsonRefKey).map(([, text]) => text);
 	const candidates = ref
 		? [translate(ref), field.name]
-		: [label[language], label[SYSTEM_DEFAULT_LANGUAGE], field.name];
+		: [label[language], label[SYSTEM_DEFAULT_LANGUAGE], ...otherLabels, field.name];
 	const keys: string[] = [];
 	for (const candidate of candidates) {
 		const key = normalizeMatchKey(candidate);

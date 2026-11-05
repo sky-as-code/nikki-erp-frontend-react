@@ -10,10 +10,12 @@ import { buildSalesOrderPages } from './salesOrder';
 import { buildSalesPaymentPages } from './salesPayment';
 import { buildSalesPointPages } from './salesPoint';
 import { buildSalesPricelistPages } from './salesPricelist';
-import { buildSalesPromotionProgramPages } from './salesPromotionProgram';
+import { buildSalesPromotionPages } from './salesPromotion';
+import { buildSalesPromotionRewardPages } from './salesPromotionReward';
+import { buildSalesPromotionRulePages } from './salesPromotionRule';
 import { buildSalesQuotationPages } from './salesQuotation';
 import { buildSalesReturnPages } from './salesReturn';
-import { buildSalesVoucherCodePages } from './salesVoucherCode';
+import { buildSalesVoucherPages } from './salesVoucher';
 import * as c from '../../constants/sales';
 
 import type { PageNode } from '@nikkierp/viewengine/metadata';
@@ -28,9 +30,11 @@ const allPages: { name: string, build: () => PageNode[] }[] = [
 	{ name: 'salesFiscalRequest', build: buildSalesFiscalRequestPages },
 	{ name: 'salesReturn', build: buildSalesReturnPages },
 	{ name: 'salesPricelist', build: buildSalesPricelistPages },
-	{ name: 'salesPromotionProgram', build: buildSalesPromotionProgramPages },
+	{ name: 'salesPromotion', build: buildSalesPromotionPages },
+	{ name: 'salesPromotionRule', build: buildSalesPromotionRulePages },
+	{ name: 'salesPromotionReward', build: buildSalesPromotionRewardPages },
 	{ name: 'salesCombo', build: buildSalesComboPages },
-	{ name: 'salesVoucherCode', build: buildSalesVoucherCodePages },
+	{ name: 'salesVoucher', build: buildSalesVoucherPages },
 	{ name: 'salesChannel', build: buildSalesChannelPages },
 	{ name: 'salesPoint', build: buildSalesPointPages },
 ];
@@ -77,8 +81,8 @@ describe('Sales page metadata', () => {
 
 		expect(routePaths).toEqual([
 			'sales_order', 'sales_quotation', 'sales_bill', 'sales_payment',
-			'sales_fiscal_request', 'sales_return', 'sales_pricelist', 'sales_promotion_program', 'sales_combo',
-			'sales_voucher_code', 'sales_channel', 'sales_point',
+			'sales_fiscal_request', 'sales_return', 'sales_pricelist', 'sales_promotion', 'sales_promotion_rule',
+			'sales_promotion_reward', 'sales_combo', 'sales_voucher', 'sales_channel', 'sales_point',
 		]);
 		for (const routePath of routePaths) {
 			expect(routePath).toMatch(/^[a-z][a-z0-9_]*$/);
@@ -108,6 +112,8 @@ describe('Sales list templates', () => {
 	/**
 	 * Inline row editing goes on master data only. Orders, quotations, bills, payments, fiscal
 	 * requests and returns change through their workflow actions, which a cell edit would bypass.
+	 * Promotions and vouchers neither: an active promotion's configuration is locked, and the lock
+	 * hint lives on the detail form.
 	 */
 	it('enables inline row editing on master data only', () => {
 		const inlineEditable = allPages
@@ -117,7 +123,7 @@ describe('Sales list templates', () => {
 			.map(({ name }) => name);
 
 		expect(inlineEditable).toEqual([
-			'salesPricelist', 'salesPromotionProgram', 'salesCombo', 'salesVoucherCode', 'salesChannel', 'salesPoint',
+			'salesPricelist', 'salesCombo', 'salesChannel', 'salesPoint',
 		]);
 	});
 });
@@ -140,9 +146,11 @@ describe('Sales schema binding', () => {
 			{ primary: 'sales_fiscal_request', secondary: 'sales_fiscal_request' },
 			{ primary: 'sales_return', secondary: 'sales_return' },
 			{ primary: 'sales_pricelist', secondary: 'sales_pricelist' },
-			{ primary: 'sales_promotion_program', secondary: 'sales_promotion_program' },
+			{ primary: 'sales_promotion', secondary: 'sales_promotion' },
+			{ primary: 'sales_promotion_rule', secondary: 'sales_promotion_rule' },
+			{ primary: 'sales_promotion_reward', secondary: 'sales_promotion_reward' },
 			{ primary: 'sales_combo', secondary: 'sales_combo' },
-			{ primary: 'sales_voucher_code', secondary: 'sales_voucher_code' },
+			{ primary: 'sales_voucher', secondary: 'sales_voucher' },
 			{ primary: 'sales_channel', secondary: 'sales_channel' },
 			{ primary: 'sales_point', secondary: 'sales_point' },
 		]);
@@ -156,8 +164,10 @@ describe('Sales schema binding', () => {
 	it('derives every resource path from its schema name, unpluralised', () => {
 		expect(c.SALES_ORDER_RESOURCE_PATH).toBe('v1/sales/sales_order');
 		expect(c.SALES_BILL_RESOURCE_PATH).toBe(`v1/sales/${c.SALES_BILL_SCHEMA_NAME}`);
-		expect(c.SALES_VOUCHER_REDEMPTION_RESOURCE_PATH)
-			.toBe(`v1/sales/${c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME}`);
+		expect(c.SALES_PROMOTION_RESOURCE_PATH).toBe('v1/sales/sales_promotion');
+		expect(c.SALES_VOUCHER_RESOURCE_PATH).toBe('v1/sales/sales_voucher');
+		expect(c.SALES_PROMOTION_RULE_PRODUCT_RESOURCE_PATH).toBe('v1/sales/sales_promotion_rule_product');
+		expect(c.SALES_ORDER_PROMOTION_SELECTION_RESOURCE_PATH).toBe('v1/sales/sales_order_promotion_selection');
 	});
 });
 
@@ -187,9 +197,11 @@ describe('Derived test ids', () => {
 			'sales_fiscal_request.fiscalRequestList',
 			'sales_return.returnList',
 			'sales_pricelist.pricelistList',
-			'sales_promotion_program.promotionProgramList',
+			'sales_promotion.promotionList',
+			'sales_promotion_rule.promotionRuleList',
+			'sales_promotion_reward.promotionRewardList',
 			'sales_combo.comboList',
-			'sales_voucher_code.voucherCodeList',
+			'sales_voucher.voucherList',
 			'sales_channel.channelList',
 			'sales_point.pointList',
 		]);
@@ -224,13 +236,13 @@ describe('Sales order page', () => {
 	});
 
 	/**
-	 * Confirm redeems vouchers and reserves stock, so it is offered on a draft alone and the backend
-	 * refuses a second one rather than treating it as idempotent.
+	 * Confirm consumes promotion usage and reserves stock, so it is offered on a draft alone and the
+	 * backend refuses a second one rather than treating it as idempotent.
 	 */
-	it('gates confirm, reprice, apply_voucher and manual_discount on draft', () => {
+	it('gates confirm, reprice and manual_discount on draft', () => {
 		const pages = buildSalesOrderPages();
 
-		for (const name of ['confirm', 'reprice', 'apply_voucher', 'manual_discount']) {
+		for (const name of ['confirm', 'reprice', 'manual_discount']) {
 			expect(contextualAction(pages, name).condition, `'${name}' condition`)
 				.toEqual({ field: 'status', operator: 'equal', value: c.ORDER_STATUS_DRAFT });
 		}
@@ -294,9 +306,10 @@ describe('Badge translation prefixes', () => {
 		}
 
 		expect([...prefixes].sort()).toEqual([
-			'activation_type.', 'adjustment_type.', 'applies_to.', 'calculation_method.',
-			'fiscal_status.', 'fulfillment_status.', 'invoice_status.', 'line_type.',
-			'payment_state.', 'payment_status.', 'quotation_status.', 'relation_type.', 'status.',
+			'adjustment_type.', 'allocation_type.', 'applies_to.', 'calculation_method.', 'fiscal_status.', 'fulfillment_status.',
+			'has_mixed_uom.', 'invoice_status.', 'line_type.', 'payment_state.', 'payment_status.', 'program_type.',
+			'promotion_availability.', 'promotion_reward_type.', 'promotion_rule_phase.', 'quotation_status.', 'relation_type.', 'status.',
+			'voucher_availability.', 'voucher_type.',
 		]);
 	});
 });
@@ -316,13 +329,18 @@ describe('Sales order related tables', () => {
 			c.SALES_FULFILLMENT_REQUEST_SCHEMA_NAME,
 			c.SALES_ORDER_FULFILLMENT_SCHEMA_NAME,
 			c.SALES_ORDER_FULFILLMENT_ITEM_SCHEMA_NAME,
+			c.SALES_PROMOTION_APPLICATION_SCHEMA_NAME,
+			c.SALES_PROMOTION_ALLOCATION_SCHEMA_NAME,
+			c.SALES_VOUCHER_ISSUANCE_SCHEMA_NAME,
 			c.SALES_ORDER_EVENT_SCHEMA_NAME,
 		]);
-		// A fulfillment item carries no order id of its own, so its table filters through the
-		// fulfillment edge; every other table filters on the column directly.
+		// A fulfillment item and an allocation carry no order id of their own, so their tables filter
+		// through an edge; the promotion results name the order `order_id` / `source_order_id`.
 		for (const table of tables) {
 			const filter = table.initialGraph as { if: [string, string, string] };
-			expect(['sales_order_id', 'fulfillment.sales_order_id']).toContain(filter.if[0]);
+			expect([
+				'sales_order_id', 'fulfillment.sales_order_id', 'order_id', 'application.order_id', 'source_order_id',
+			]).toContain(filter.if[0]);
 			expect(filter.if.slice(1)).toEqual(['=', '${id}']);
 		}
 	});
@@ -343,26 +361,29 @@ describe('Sales order related tables', () => {
 	 * Known gap. `ActionPromptModal` narrows the page's own resource schema to the prompt's named
 	 * fields and drops any the schema does not declare, so a prompt naming `reason`, `code`,
 	 * `discount_amount` or `sales_manual_discount_id` — action parameters, not order fields — renders
-	 * an empty dialog. `apply_voucher` and `manual_discount` are therefore refused by the backend;
-	 * `cancel` works, its reason being optional. This test fails once a prompt can collect a field
-	 * the resource schema does not declare, and should then be removed with the workaround.
+	 * an empty dialog. `manual_discount` is therefore refused by the backend; `cancel` works, its
+	 * reason being optional. This test fails once a prompt can collect a field the resource schema
+	 * does not declare, and should then be removed with the workaround. Vouchers are entered in the
+	 * order's Promotions panel instead, so the page offers no `apply_voucher` action at all.
 	 */
 	it('asks for nothing on the actions whose parameters are not schema fields', () => {
 		const pages = buildSalesOrderPages();
 
-		for (const name of ['apply_voucher', 'manual_discount']) {
-			expect(contextualAction(pages, name).prompt, `'${name}' prompt`).toBeUndefined();
-		}
+		expect(contextualAction(pages, 'manual_discount').prompt).toBeUndefined();
+		expect((detailProps(pages[0]).contextualActions as Record<string, unknown>).apply_voucher).toBeUndefined();
 	});
 
 	/**
 	 * The notes are fields of the order, so confirm and cancel can prompt for them; each is written
 	 * by its own action and closed to a plain update on the backend.
 	 */
-	it('prompts for the note on confirm and cancel', () => {
+	/** Confirm is a component: its dialog collects the note and sends the accepted quote reference. */
+	it('prompts for the note on cancel and confirms through the promotion-aware component', () => {
 		const pages = buildSalesOrderPages();
+		const confirm = contextualAction(pages, 'confirm') as ContextualAction & { component?: string };
 
-		expect(contextualAction(pages, 'confirm').prompt?.fields.map(field => field.name)).toEqual(['confirmation_note']);
+		expect(confirm.component).toBe('nikkierp.sales.components.orderConfirmAction.v1');
+		expect(confirm.prompt).toBeUndefined();
 		expect(contextualAction(pages, 'cancel').prompt?.fields.map(field => field.name)).toEqual(['cancellation_note']);
 	});
 });
@@ -546,23 +567,10 @@ describe('Pricing resources', () => {
 
 	/** Master data falls out of use without being cancelled, so all four are archivable. */
 	it('makes every pricing resource archivable', () => {
-		for (const build of [buildSalesPricelistPages, buildSalesPromotionProgramPages,
-			buildSalesComboPages, buildSalesVoucherCodePages]) {
+		for (const build of [buildSalesPricelistPages, buildSalesPromotionPages,
+			buildSalesComboPages, buildSalesVoucherPages]) {
 			expect(listProps(build()[0]).archiveCommand).toBeDefined();
 		}
-	});
-
-	/**
-	 * `sales_voucher_redemption` links to its code through `voucher_code_id`, not
-	 * `sales_voucher_code_id` — one of three children here that break the `{parent_schema}_id`
-	 * convention. A filter naming the conventional column returns an empty table, not an error.
-	 */
-	it('filters redemptions by the unconventional foreign key', () => {
-		const [page] = buildSalesVoucherCodePages();
-		const [redemptions] = relatedTables(page);
-
-		expect(redemptions.schemaName).toBe(c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME);
-		expect(redemptions.initialGraph).toEqual({ if: ['voucher_code_id', '=', '${id}'] });
 	});
 
 	/**
@@ -581,7 +589,7 @@ describe('Pricing resources', () => {
 
 type ContextualAction = {
 	label: string,
-	command: string,
+	command?: string,
 	condition?: unknown,
 	prompt?: { fields: { name: string, required?: boolean }[] },
 };
@@ -623,7 +631,7 @@ function splitViewSchemas(pages: PageNode[]): { primary: string, secondary: stri
 /**
  * Mirrors `viewkit-mantine`'s private `entityOf` for the `data-testid` derivation: a schema name is
  * `{module}_{entity}`, and the route already implies the module, so only the entity is repeated.
- * `sales_order` → `order`, `sales_voucher_code` → `voucherCode`.
+ * `sales_order` → `order`, `sales_promotion_rule` → `promotionRule`.
  */
 function entityOf(schemaName: string): string {
 	const parts = schemaName.split('_').filter(Boolean);
@@ -700,7 +708,7 @@ describe('Sales numeric renderers', () => {
 		['sales payment', buildSalesPaymentPages, 'amount', { renderer: 'money', currencyField: 'currency_code' }],
 		['sales combo', buildSalesComboPages, 'combo_price', { renderer: 'money' }],
 		['sales pricelist item', buildSalesPricelistPages, 'discount_percent', { renderer: 'float', precision: 2 }],
-		['promotion reward', buildSalesPromotionProgramPages, 'value', { renderer: 'float', precision: 2 }],
+		['promotion reward', buildSalesPromotionRewardPages, 'discount_value', { renderer: 'float', precision: 2 }],
 		['sales return', buildSalesReturnPages, 'refund_total', { renderer: 'money' }],
 	];
 

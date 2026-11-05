@@ -21,10 +21,13 @@ export type RecordOption = { value: string, label: string };
  * Narrows a record search below what the target schema alone would offer. `searchField` is matched
  * against the typed term instead of the schema's `record_label_field` — needed when the label is a
  * `function` computed field the server cannot filter on. `graph` is ANDed into every request.
+ * `initialGraph` narrows the dropdown the same way, but the "Browse all" picker shows it as filter
+ * conditions the user may change or remove, whereas `graph` stays locked there.
  */
 export type RecordSearchScope = {
 	searchField?: string,
 	graph?: dyn.SearchNode,
+	initialGraph?: dyn.SearchNode,
 };
 
 export type RecordSearchOptions = {
@@ -58,7 +61,7 @@ export function useRecordSearchOptions(
 	const search = useSearchPage({
 		destSchemaName: targetSchema ? destSchemaName : '', term: debouncedTerm, labelField, subLabelField, pageSize,
 		searchField: scope?.searchField ?? labelField,
-		scopeGraph: scope?.graph,
+		scopeGraph: dropdownScopeGraph(scope),
 	});
 	const compareLocalized = useLocaleCollator();
 	// Sorted here rather than by the server, which stores the label as a LangJson and so cannot
@@ -79,6 +82,12 @@ export function useRecordSearchOptions(
 		labelField,
 		subLabelField,
 	};
+}
+
+/** The dropdown has no filter panel to show `initialGraph` in, so both narrow it. */
+export function dropdownScopeGraph(scope: RecordSearchScope | undefined): dyn.SearchNode | undefined {
+	const nodes = [scope?.graph, scope?.initialGraph].filter((node): node is dyn.SearchNode => !!node);
+	return nodes.length > 1 ? { and: nodes } : nodes[0];
 }
 
 type SearchPageResult = {

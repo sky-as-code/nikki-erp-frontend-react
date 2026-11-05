@@ -37,4 +37,18 @@ describe('relation search scopes', () => {
 			and: [{ if: ['warehouse_id', '=', 'W1'] }, { if: ['location_type', '=', 'internal'] }],
 		});
 	});
+
+	it('carries a static graph as the editable initial graph, apart from the locked match', () => {
+		const directOnly = { if: ['accept_direct_transfers', '=', true] };
+		const scopes = buildRelationSearchScopes(
+			{ location_id: { matchFormFields: { warehouse_id: 'warehouse_id' }, graph: directOnly } },
+			{ warehouse_id: 'W1' },
+		);
+
+		expect(scopes.location_id).toEqual({
+			searchField: undefined,
+			graph: { if: ['warehouse_id', '=', 'W1'] },
+			initialGraph: directOnly,
+		});
+	});
 });

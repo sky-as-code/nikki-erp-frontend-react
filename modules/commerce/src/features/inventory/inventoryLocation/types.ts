@@ -34,6 +34,9 @@ export type InventoryLocation = {
 	storage_category_id?: string,
 	removal_strategy?: InventoryLocationRemovalStrategy,
 	is_replenishment_destination?: boolean,
+	/** False for a location only its manager stocks (a vending slot), so location pickers leave it out. */
+	accept_direct_transfers?: boolean,
+	managed_by_type?: string,
 	is_system_generated?: boolean,
 	status?: InventoryLocationStatus,
 	description?: string,

@@ -14,7 +14,7 @@ export type PaymentMethod = {
 	/** Names the gateway adapter serving this method: `momo`, `mpos`, `vietqr`. */
 	adapter_code?: string,
 
-	name?: dyn.ModelSchemaLangJson,
+	name?: string,
 	description?: string,
 	currency_id?: string,
 
