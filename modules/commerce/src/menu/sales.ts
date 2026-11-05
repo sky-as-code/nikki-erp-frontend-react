@@ -33,9 +33,9 @@ const ITEMS: MenuItem[] = [
 		labelKey: 'menu.pricing',
 		items: [
 			{ labelKey: 'menu.pricelists', link: '/sales_pricelist' },
-			{ labelKey: 'menu.promotions', link: '/sales_promotion_program' },
+			{ labelKey: 'menu.promotions', link: '/sales_promotion' },
 			{ labelKey: 'menu.combos', link: '/sales_combo' },
-			{ labelKey: 'menu.voucherCodes', link: '/sales_voucher_code' },
+			{ labelKey: 'menu.vouchers', link: '/sales_voucher' },
 		],
 	},
 	{
@@ -46,7 +46,7 @@ const ITEMS: MenuItem[] = [
 		],
 	},
 	// Child records (order lines, adjustments, events, bill lines, combo components, pricelist
-	// items, promotion rewards, redemptions, fulfilment requests) get no entry: each is shown on the
+	// items, promotion rules and rewards, fulfilment requests) get no entry: each is shown on the
 	// document that owns it. `sales_integration_outbox` gets none either — it is an at-least-once
 	// delivery queue, and a screen inviting someone to correct a row would break that guarantee.
 ];

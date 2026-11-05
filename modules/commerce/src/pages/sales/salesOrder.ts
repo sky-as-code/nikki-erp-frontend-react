@@ -12,6 +12,10 @@ import { SalesOrderEventCommands } from '../../features/sales/salesOrderEvent/co
 import { SalesOrderFulfillmentCommands } from '../../features/sales/salesOrderFulfillment/commands';
 import { SalesOrderFulfillmentItemCommands } from '../../features/sales/salesOrderFulfillmentItem/commands';
 import { SalesOrderLineCommands } from '../../features/sales/salesOrderLine/commands';
+import { SalesPromotionAllocationCommands } from '../../features/sales/salesPromotionAllocation/commands';
+import { SalesPromotionApplicationCommands } from '../../features/sales/salesPromotionApplication/commands';
+import { SalesVoucherIssuanceCommands } from '../../features/sales/salesVoucherIssuance/commands';
+import { ORDER_CONFIRM_ACTION, orderPromotionsPanelNode } from '../../viewkit/sales/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -154,12 +158,13 @@ function buildSalesOrderDetailProps() {
 		},
 		contextualActions: buildSalesOrderActions(),
 		// No `createNodes`: an order is raised through `create_order`, never through this form.
-		childrenNodes: [buildSalesOrderFieldsSection()],
+		childrenNodes: [buildSalesOrderFieldsSection(), buildSalesOrderPromotionsSection()],
 		relatedResources: [
 			buildSalesOrderLinesResource(),
 			buildSalesOrderAdjustmentsResource(),
 			buildSalesOrderFulfillmentResource(),
 			...buildSalesOrderKioskFulfillmentResources(),
+			...buildSalesOrderPromotionResources(),
 			buildSalesOrderEventsResource(),
 		],
 	});
@@ -206,6 +211,68 @@ function buildSalesOrderKioskFulfillmentResources() {
  * The status and money fields are `no_update` or computed on the backend; the form renders them
  * read-only from the schema.
  */
+/** The draft's vouchers, reward choices and quote; a confirmed order reads its applications in the tabs. */
+function buildSalesOrderPromotionsSection(): ComponentNode {
+	return collapsibleSectionNode({
+		translationNs: c.SALES_MODULE,
+		header: 'promotion.panel.title',
+	}, [orderPromotionsPanelNode()]);
+}
+
+/**
+ * Read-only results of Confirm: what each promotion gave, how it was spread over the lines, and the
+ * next-order coupons this order issued. Readable with `read` on the order.
+ */
+function buildSalesOrderPromotionResources() {
+	const money = { renderer: 'money' };
+	return [
+		{
+			label: 'sales_order_sections_promotionApplications',
+			schemaName: c.SALES_PROMOTION_APPLICATION_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesPromotionApplicationCommands.SEARCH,
+			initialGraph: { if: ['order_id', '=', '${id}'] },
+			fields: ['promotion_id', 'reward_id', 'voucher_id', 'status', 'discount_untaxed_amount',
+				'tax_reduction_amount', 'discount_total_amount', 'applied_at', 'reversed_at'],
+			fieldRenderers: {
+				status: { renderer: 'badge', colorMap: { confirmed: 'green', reversed: 'gray' }, prefix: 'status.' },
+				discount_untaxed_amount: money,
+				tax_reduction_amount: money,
+				discount_total_amount: money,
+			},
+		},
+		{
+			label: 'sales_promotion_application_sections_allocations',
+			schemaName: c.SALES_PROMOTION_ALLOCATION_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesPromotionAllocationCommands.SEARCH,
+			initialGraph: { if: ['application.order_id', '=', '${id}'] },
+			fields: ['application_id', 'order_line_id', 'allocation_type', 'eligible_quantity', 'base_untaxed_amount',
+				'discount_untaxed_amount', 'tax_reduction_amount', 'discount_total_amount'],
+			fieldRenderers: {
+				allocation_type: { renderer: 'badge', colorMap: {
+					merchandise_discount: 'green', shipping_discount: 'blue', free_product: 'teal',
+				}, prefix: 'allocation_type.' },
+				eligible_quantity: FLOAT_RENDERER,
+				base_untaxed_amount: money,
+				discount_untaxed_amount: money,
+				tax_reduction_amount: money,
+				discount_total_amount: money,
+			},
+		},
+		{
+			label: 'sales_order_sections_issuedVouchers',
+			schemaName: c.SALES_VOUCHER_ISSUANCE_SCHEMA_NAME,
+			translationNs: c.SALES_MODULE,
+			searchCommand: SalesVoucherIssuanceCommands.SEARCH,
+			initialGraph: { if: ['source_order_id', '=', '${id}'] },
+			fields: ['voucher_id', 'promotion_id', 'issued_at'],
+			linkField: 'voucher_id',
+			linkRoutePath: 'sales_voucher',
+		},
+	];
+}
+
 function buildSalesOrderFieldsSection(): ComponentNode {
 	return collapsibleSectionNode({
 		layout: 'formBlocks',
@@ -294,7 +361,7 @@ function buildSalesOrderActions() {
  * Draft-only, sharing one condition: a confirmed order is frozen, and repricing or discounting it
  * would move a total the customer has already been charged — the correction is a return or refund.
  * Confirm is here for the mirror reason: it has side effects, so a second one is refused rather
- * than treated as idempotent, which would redeem the voucher twice.
+ * than treated as idempotent, which would consume a promotion's usage twice.
  */
 function buildDraftOnlyActions() {
 	const onlyOnDraft = {
@@ -304,26 +371,17 @@ function buildDraftOnlyActions() {
 	};
 
 	return {
+		// A component, not a command: it sends the accepted quote reference and reviews a requote.
 		confirm: {
 			label: 'actions.confirm',
-			command: SalesOrderCommands.CONFIRM,
+			component: ORDER_CONFIRM_ACTION,
 			actionCode: 'confirm',
 			condition: onlyOnDraft,
-			prompt: {
-				title: 'actions.confirm.title',
-				fields: [{ name: 'confirmation_note' }],
-			},
 		},
 		reprice: {
 			label: 'actions.reprice',
 			command: SalesOrderCommands.REPRICE,
 			actionCode: 'update',
-			condition: onlyOnDraft,
-		},
-		apply_voucher: {
-			label: 'actions.apply_voucher',
-			command: SalesOrderCommands.APPLY_VOUCHER,
-			actionCode: 'apply_voucher',
 			condition: onlyOnDraft,
 		},
 		manual_discount: {
@@ -357,7 +415,7 @@ function buildSalesOrderLinesResource() {
 				colorMap: {
 					product: 'gray',
 					combo: 'indigo',
-					promotion_reward: 'green',
+					promotion_gift: 'green',
 				},
 				prefix: 'line_type.',
 			},
@@ -392,7 +450,6 @@ function buildSalesOrderAdjustmentsResource() {
 					conditional_price: 'blue',
 					percentage_discount: 'green',
 					fixed_discount: 'green',
-					voucher: 'grape',
 					manual_discount: 'orange',
 					rounding: 'gray',
 				},

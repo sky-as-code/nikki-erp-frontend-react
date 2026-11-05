@@ -1,8 +1,9 @@
 import { Command, ICommandBus } from '@nikkierp/common/commandBus';
 import { registerCrudService, registerSchemaModule, resourceCommands } from '@nikkierp/common/dynamicModel';
 
+import { promotionSubscriptions, SalesOrderPromotionCommands } from './promotionCommands';
 import {
-	ApplyVoucherRequest, CreateOrderRequest, ManualDiscountRequest, NotedActionRequest, OrderActionRequest,
+	CreateOrderRequest, ManualDiscountRequest, NotedActionRequest, OrderActionRequest,
 	ReasonedActionRequest, RevokeManualDiscountRequest, salesOrderService,
 } from './salesOrderService';
 import { SALES_MODULE, SALES_ORDER_SCHEMA_NAME } from '../../../constants/sales';
@@ -21,10 +22,10 @@ export const SalesOrderCommands = Object.freeze({
 	CONFIRM: `${PREFIX}.confirm`,
 	CANCEL: `${PREFIX}.cancel`,
 	REPRICE: `${PREFIX}.reprice`,
-	APPLY_VOUCHER: `${PREFIX}.apply_voucher`,
 	EXPLAIN_PRICE: `${PREFIX}.explain_price`,
 	MANUAL_DISCOUNT: `${PREFIX}.manual_discount`,
 	REVOKE_MANUAL_DISCOUNT: `${PREFIX}.revoke_manual_discount`,
+	...SalesOrderPromotionCommands,
 } as const);
 
 /**
@@ -38,6 +39,7 @@ export function registerSalesOrderCommands(bus: ICommandBus): () => void {
 	const unsubscribers = [
 		...lifecycleSubscriptions(bus),
 		...pricingSubscriptions(bus),
+		...promotionSubscriptions(bus),
 	];
 
 	return () => unsubscribers.forEach(unsubscribe => unsubscribe());
@@ -51,7 +53,7 @@ function lifecycleSubscriptions(bus: ICommandBus): (() => void)[] {
 		),
 		bus.subscribe(
 			SalesOrderCommands.CONFIRM,
-			cmd => salesOrderService.confirm(notedRequest(cmd, 'confirmation_note')),
+			cmd => salesOrderService.confirm(confirmRequest(cmd)),
 		),
 		bus.subscribe(
 			SalesOrderCommands.CANCEL,
@@ -66,10 +68,6 @@ function lifecycleSubscriptions(bus: ICommandBus): (() => void)[] {
 
 function pricingSubscriptions(bus: ICommandBus): (() => void)[] {
 	return [
-		bus.subscribe(
-			SalesOrderCommands.APPLY_VOUCHER,
-			cmd => salesOrderService.applyVoucher(voucherRequest(cmd)),
-		),
 		bus.subscribe(
 			SalesOrderCommands.EXPLAIN_PRICE,
 			cmd => salesOrderService.explainPrice(actionRequest(cmd)),
@@ -118,20 +116,21 @@ function notedRequest(command: Command, field: 'confirmation_note' | 'cancellati
 	return { ...actionRequest(command), ...noteOf(command, field) };
 }
 
+/** The accepted reference is optional: without it the backend compares against the stored quote. */
+function confirmRequest(command: Command): NotedActionRequest {
+	const reference = (command.payload as Record<string, unknown>).accepted_calculation_reference;
+	const request = notedRequest(command, 'confirmation_note');
+	return reference == null || reference === ''
+		? request
+		: { ...request, accepted_calculation_reference: String(reference) };
+}
+
 function noteOf(command: Command, field: 'confirmation_note' | 'cancellation_note'): Partial<NotedActionRequest> {
 	const value = (command.payload as Record<string, unknown>)[field];
 	if (value == null || value === '') {
 		return {};
 	}
 	return { [field]: String(value) };
-}
-
-function voucherRequest(command: Command): ApplyVoucherRequest {
-	const payload = command.payload as Record<string, unknown>;
-	return {
-		...actionRequest(command),
-		code: String(payload.code ?? ''),
-	};
 }
 
 /** The line id is omitted rather than sent empty; both mean order-level to the backend. */

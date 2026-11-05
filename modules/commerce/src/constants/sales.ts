@@ -21,13 +21,21 @@ export const SALES_CHANNEL_SCHEMA_NAME = 'sales_channel';
 export const SALES_POINT_SCHEMA_NAME = 'sales_point';
 export const SALES_PRICELIST_SCHEMA_NAME = 'sales_pricelist';
 export const SALES_PRICELIST_ITEM_SCHEMA_NAME = 'sales_pricelist_item';
-export const SALES_PROMOTION_PROGRAM_SCHEMA_NAME = 'sales_promotion_program';
+export const SALES_PROMOTION_SCHEMA_NAME = 'sales_promotion';
+export const SALES_PROMOTION_RULE_SCHEMA_NAME = 'sales_promotion_rule';
+export const SALES_PROMOTION_RULE_PRODUCT_SCHEMA_NAME = 'sales_promotion_rule_product';
+export const SALES_PROMOTION_RULE_CATEGORY_SCHEMA_NAME = 'sales_promotion_rule_category';
 export const SALES_PROMOTION_REWARD_SCHEMA_NAME = 'sales_promotion_reward';
-export const SALES_PROMOTION_CONDITION_GROUP_SCHEMA_NAME = 'sales_promotion_condition_group';
+export const SALES_PROMOTION_REWARD_PRODUCT_SCHEMA_NAME = 'sales_promotion_reward_product';
+export const SALES_PROMOTION_REWARD_CATEGORY_SCHEMA_NAME = 'sales_promotion_reward_category';
+export const SALES_VOUCHER_SCHEMA_NAME = 'sales_voucher';
+export const SALES_PROMOTION_APPLICATION_SCHEMA_NAME = 'sales_promotion_application';
+export const SALES_PROMOTION_ALLOCATION_SCHEMA_NAME = 'sales_promotion_allocation';
+export const SALES_VOUCHER_ISSUANCE_SCHEMA_NAME = 'sales_voucher_issuance';
+export const SALES_ORDER_VOUCHER_SCHEMA_NAME = 'sales_order_voucher';
+export const SALES_ORDER_PROMOTION_SELECTION_SCHEMA_NAME = 'sales_order_promotion_selection';
 export const SALES_COMBO_SCHEMA_NAME = 'sales_combo';
 export const SALES_COMBO_COMPONENT_SCHEMA_NAME = 'sales_combo_component';
-export const SALES_VOUCHER_CODE_SCHEMA_NAME = 'sales_voucher_code';
-export const SALES_VOUCHER_REDEMPTION_SCHEMA_NAME = 'sales_voucher_redemption';
 export const SALES_FISCAL_REQUEST_SCHEMA_NAME = 'sales_fiscal_request';
 export const SALES_FULFILLMENT_REQUEST_SCHEMA_NAME = 'sales_fulfillment_request';
 export const SALES_FULFILLMENT_REQUEST_LINE_SCHEMA_NAME = 'sales_fulfillment_request_line';
@@ -58,13 +66,21 @@ export const SALES_CHANNEL_RESOURCE_PATH = `v1/sales/${SALES_CHANNEL_SCHEMA_NAME
 export const SALES_POINT_RESOURCE_PATH = `v1/sales/${SALES_POINT_SCHEMA_NAME}`;
 export const SALES_PRICELIST_RESOURCE_PATH = `v1/sales/${SALES_PRICELIST_SCHEMA_NAME}`;
 export const SALES_PRICELIST_ITEM_RESOURCE_PATH = `v1/sales/${SALES_PRICELIST_ITEM_SCHEMA_NAME}`;
-export const SALES_PROMOTION_PROGRAM_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_PROGRAM_SCHEMA_NAME}`;
+export const SALES_PROMOTION_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_SCHEMA_NAME}`;
+export const SALES_PROMOTION_RULE_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_RULE_SCHEMA_NAME}`;
+export const SALES_PROMOTION_RULE_PRODUCT_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_RULE_PRODUCT_SCHEMA_NAME}`;
+export const SALES_PROMOTION_RULE_CATEGORY_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_RULE_CATEGORY_SCHEMA_NAME}`;
 export const SALES_PROMOTION_REWARD_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_REWARD_SCHEMA_NAME}`;
-export const SALES_PROMOTION_CONDITION_GROUP_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_CONDITION_GROUP_SCHEMA_NAME}`;
+export const SALES_PROMOTION_REWARD_PRODUCT_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_REWARD_PRODUCT_SCHEMA_NAME}`;
+export const SALES_PROMOTION_REWARD_CATEGORY_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_REWARD_CATEGORY_SCHEMA_NAME}`;
+export const SALES_VOUCHER_RESOURCE_PATH = `v1/sales/${SALES_VOUCHER_SCHEMA_NAME}`;
+export const SALES_PROMOTION_APPLICATION_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_APPLICATION_SCHEMA_NAME}`;
+export const SALES_PROMOTION_ALLOCATION_RESOURCE_PATH = `v1/sales/${SALES_PROMOTION_ALLOCATION_SCHEMA_NAME}`;
+export const SALES_VOUCHER_ISSUANCE_RESOURCE_PATH = `v1/sales/${SALES_VOUCHER_ISSUANCE_SCHEMA_NAME}`;
+export const SALES_ORDER_VOUCHER_RESOURCE_PATH = `v1/sales/${SALES_ORDER_VOUCHER_SCHEMA_NAME}`;
+export const SALES_ORDER_PROMOTION_SELECTION_RESOURCE_PATH = `v1/sales/${SALES_ORDER_PROMOTION_SELECTION_SCHEMA_NAME}`;
 export const SALES_COMBO_RESOURCE_PATH = `v1/sales/${SALES_COMBO_SCHEMA_NAME}`;
 export const SALES_COMBO_COMPONENT_RESOURCE_PATH = `v1/sales/${SALES_COMBO_COMPONENT_SCHEMA_NAME}`;
-export const SALES_VOUCHER_CODE_RESOURCE_PATH = `v1/sales/${SALES_VOUCHER_CODE_SCHEMA_NAME}`;
-export const SALES_VOUCHER_REDEMPTION_RESOURCE_PATH = `v1/sales/${SALES_VOUCHER_REDEMPTION_SCHEMA_NAME}`;
 export const SALES_FISCAL_REQUEST_RESOURCE_PATH = `v1/sales/${SALES_FISCAL_REQUEST_SCHEMA_NAME}`;
 export const SALES_FULFILLMENT_REQUEST_RESOURCE_PATH = `v1/sales/${SALES_FULFILLMENT_REQUEST_SCHEMA_NAME}`;
 export const SALES_FULFILLMENT_REQUEST_LINE_RESOURCE_PATH = `v1/sales/${SALES_FULFILLMENT_REQUEST_LINE_SCHEMA_NAME}`;
@@ -103,6 +119,9 @@ export const CONFIRM_PATH = 'confirm';
 export const CANCEL_PATH = 'cancel';
 export const REPRICE_PATH = 'reprice';
 export const APPLY_VOUCHER_PATH = 'apply_voucher';
+export const REMOVE_VOUCHER_PATH = 'remove_voucher';
+export const SELECT_PROMOTION_REWARD_PATH = 'select_promotion_reward';
+export const PREVIEW_PROMOTIONS_PATH = 'preview_promotions';
 export const EXPLAIN_PRICE_PATH = 'explain_price';
 export const MANUAL_DISCOUNT_PATH = 'manual_discount';
 export const REVOKE_MANUAL_DISCOUNT_PATH = 'revoke_manual_discount';
@@ -134,3 +153,38 @@ export const DISABLE_PAYMENT_METHOD_PATH = 'disable_payment_method';
 
 export const SET_DEFAULT_PATH = 'set_default';
 export const REQUEST_INVOICE_PATH = 'request_invoice';
+
+export const DUPLICATE_PATH = 'duplicate';
+export const MANAGE_CHANNELS_PATH = 'manage_channels';
+export const MANAGE_POINTS_PATH = 'manage_points';
+export const MANAGE_PRICELISTS_PATH = 'manage_pricelists';
+export const MANAGE_PRODUCTS_PATH = 'manage_products';
+export const MANAGE_CATEGORIES_PATH = 'manage_categories';
+export const GENERATE_BATCH_PATH = 'generate_batch';
+export const REVOKE_PATH = 'revoke';
+
+/** Promotion statuses. `expired` and `exhausted` are derived for display, never stored. */
+export const PROMOTION_STATUS_DRAFT = 'draft';
+export const PROMOTION_STATUS_ACTIVE = 'active';
+export const PROMOTION_STATUS_SUSPENDED = 'suspended';
+
+export const PROMOTION_TYPE_AUTOMATIC = 'automatic';
+export const PROMOTION_TYPE_DISCOUNT_CODE = 'discount_code';
+export const PROMOTION_TYPE_COUPON = 'coupon';
+export const PROMOTION_TYPE_BUY_X_GET_Y = 'buy_x_get_y';
+export const PROMOTION_TYPE_NEXT_ORDER_COUPON = 'next_order_coupon';
+
+export const PROMOTION_RULE_PHASE_APPLY = 'apply';
+export const PROMOTION_RULE_PHASE_ISSUE = 'issue';
+
+export const PROMOTION_REWARD_TYPE_DISCOUNT = 'discount';
+export const PROMOTION_REWARD_TYPE_FREE_PRODUCT = 'free_product';
+export const PROMOTION_REWARD_TYPE_FREE_SHIPPING = 'free_shipping';
+
+export const PROMOTION_DISCOUNT_SCOPE_SPECIFIC_PRODUCTS = 'specific_products';
+
+export const VOUCHER_STATUS_ACTIVE = 'active';
+export const VOUCHER_STATUS_REVOKED = 'revoked';
+
+/** `generate_batch` refuses more in one call. */
+export const VOUCHER_BATCH_MAX = 1000;

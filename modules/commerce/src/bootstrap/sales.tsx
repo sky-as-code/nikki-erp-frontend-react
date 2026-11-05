@@ -18,18 +18,26 @@ import { registerSalesOrderFulfillmentCommands } from '../features/sales/salesOr
 import { registerSalesOrderFulfillmentItemCommands } from '../features/sales/salesOrderFulfillmentItem/commands';
 import { registerSalesOrderLineCommands } from '../features/sales/salesOrderLine/commands';
 import { registerSalesOrderLineComponentCommands } from '../features/sales/salesOrderLineComponent/commands';
+import { registerSalesOrderPromotionSelectionCommands } from '../features/sales/salesOrderPromotionSelection/commands';
+import { registerSalesOrderVoucherCommands } from '../features/sales/salesOrderVoucher/commands';
 import { registerSalesPaymentCommands } from '../features/sales/salesPayment/commands';
 import { registerSalesPointCommands } from '../features/sales/salesPoint/commands';
 import { registerSalesPricelistCommands } from '../features/sales/salesPricelist/commands';
 import { registerSalesPricelistItemCommands } from '../features/sales/salesPricelistItem/commands';
-import { registerSalesPromotionConditionGroupCommands } from '../features/sales/salesPromotionConditionGroup/commands';
-import { registerSalesPromotionProgramCommands } from '../features/sales/salesPromotionProgram/commands';
+import { registerSalesPromotionCommands } from '../features/sales/salesPromotion/commands';
+import { registerSalesPromotionAllocationCommands } from '../features/sales/salesPromotionAllocation/commands';
+import { registerSalesPromotionApplicationCommands } from '../features/sales/salesPromotionApplication/commands';
 import { registerSalesPromotionRewardCommands } from '../features/sales/salesPromotionReward/commands';
+import { registerSalesPromotionRewardCategoryCommands } from '../features/sales/salesPromotionRewardCategory/commands';
+import { registerSalesPromotionRewardProductCommands } from '../features/sales/salesPromotionRewardProduct/commands';
+import { registerSalesPromotionRuleCommands } from '../features/sales/salesPromotionRule/commands';
+import { registerSalesPromotionRuleCategoryCommands } from '../features/sales/salesPromotionRuleCategory/commands';
+import { registerSalesPromotionRuleProductCommands } from '../features/sales/salesPromotionRuleProduct/commands';
 import { registerSalesQuotationCommands } from '../features/sales/salesQuotation/commands';
 import { registerSalesQuotationLineCommands } from '../features/sales/salesQuotationLine/commands';
 import { registerSalesReturnCommands } from '../features/sales/salesReturn/commands';
-import { registerSalesVoucherCodeCommands } from '../features/sales/salesVoucherCode/commands';
-import { registerSalesVoucherRedemptionCommands } from '../features/sales/salesVoucherRedemption/commands';
+import { registerSalesVoucherCommands } from '../features/sales/salesVoucher/commands';
+import { registerSalesVoucherIssuanceCommands } from '../features/sales/salesVoucherIssuance/commands';
 import { buildSalesBillPages } from '../pages/sales/salesBill';
 import { buildSalesChannelPages } from '../pages/sales/salesChannel';
 import { buildSalesComboPages } from '../pages/sales/salesCombo';
@@ -38,10 +46,13 @@ import { buildSalesOrderPages } from '../pages/sales/salesOrder';
 import { buildSalesPaymentPages } from '../pages/sales/salesPayment';
 import { buildSalesPointPages } from '../pages/sales/salesPoint';
 import { buildSalesPricelistPages } from '../pages/sales/salesPricelist';
-import { buildSalesPromotionProgramPages } from '../pages/sales/salesPromotionProgram';
+import { buildSalesPromotionPages } from '../pages/sales/salesPromotion';
+import { buildSalesPromotionRewardPages } from '../pages/sales/salesPromotionReward';
+import { buildSalesPromotionRulePages } from '../pages/sales/salesPromotionRule';
 import { buildSalesQuotationPages } from '../pages/sales/salesQuotation';
 import { buildSalesReturnPages } from '../pages/sales/salesReturn';
-import { buildSalesVoucherCodePages } from '../pages/sales/salesVoucherCode';
+import { buildSalesVoucherPages } from '../pages/sales/salesVoucher';
+import { contributeSalesViewKit } from '../viewkit/sales/kit';
 
 import type { HostServices } from '@nikkierp/ui/microApp';
 import type { PageNode } from '@nikkierp/viewengine/metadata';
@@ -51,19 +62,23 @@ import type { PageNode } from '@nikkierp/viewengine/metadata';
 export function registerSales(host: HostServices): void {
 	// No `registerReducer`: this module keeps its state in its own store (`../store/sales`).
 	registerModelSchemas();
+	contributeSalesViewKit(host.viewEngine);
 	// Ordered referenced-before-referencing, matching `registerModelSchemas` below: setup, then
 	// pricing, then the documents that resolve through both.
 	registerSalesChannelCommands(host.commandBus);
 	registerSalesPointCommands(host.commandBus);
 	registerSalesPricelistCommands(host.commandBus);
 	registerSalesPricelistItemCommands(host.commandBus);
-	registerSalesPromotionProgramCommands(host.commandBus);
-	registerSalesPromotionConditionGroupCommands(host.commandBus);
+	registerSalesPromotionCommands(host.commandBus);
+	registerSalesPromotionRuleCommands(host.commandBus);
+	registerSalesPromotionRuleProductCommands(host.commandBus);
+	registerSalesPromotionRuleCategoryCommands(host.commandBus);
 	registerSalesPromotionRewardCommands(host.commandBus);
+	registerSalesPromotionRewardProductCommands(host.commandBus);
+	registerSalesPromotionRewardCategoryCommands(host.commandBus);
 	registerSalesComboCommands(host.commandBus);
 	registerSalesComboComponentCommands(host.commandBus);
-	registerSalesVoucherCodeCommands(host.commandBus);
-	registerSalesVoucherRedemptionCommands(host.commandBus);
+	registerSalesVoucherCommands(host.commandBus);
 	registerSalesQuotationCommands(host.commandBus);
 	registerSalesQuotationLineCommands(host.commandBus);
 	registerSalesOrderCommands(host.commandBus);
@@ -74,6 +89,11 @@ export function registerSales(host: HostServices): void {
 	registerSalesOrderFulfillmentCommands(host.commandBus);
 	registerSalesOrderFulfillmentItemCommands(host.commandBus);
 	registerSalesManualDiscountCommands(host.commandBus);
+	registerSalesOrderVoucherCommands(host.commandBus);
+	registerSalesOrderPromotionSelectionCommands(host.commandBus);
+	registerSalesPromotionApplicationCommands(host.commandBus);
+	registerSalesPromotionAllocationCommands(host.commandBus);
+	registerSalesVoucherIssuanceCommands(host.commandBus);
 	registerSalesBillCommands(host.commandBus);
 	registerSalesBillLineCommands(host.commandBus);
 	registerSalesBillRelationCommands(host.commandBus);
@@ -93,9 +113,11 @@ export function buildSalesPages(): PageNode[] {
 		...buildSalesFiscalRequestPages(),
 		...buildSalesReturnPages(),
 		...buildSalesPricelistPages(),
-		...buildSalesPromotionProgramPages(),
+		...buildSalesPromotionPages(),
+		...buildSalesPromotionRulePages(),
+		...buildSalesPromotionRewardPages(),
 		...buildSalesComboPages(),
-		...buildSalesVoucherCodePages(),
+		...buildSalesVoucherPages(),
 		...buildSalesChannelPages(),
 		...buildSalesPointPages(),
 	];
@@ -139,14 +161,27 @@ function pricingSchemas() {
 		schemaName: c.SALES_PRICELIST_ITEM_SCHEMA_NAME,
 		resourcePath: c.SALES_PRICELIST_ITEM_RESOURCE_PATH,
 	}, {
-		schemaName: c.SALES_PROMOTION_PROGRAM_SCHEMA_NAME,
-		resourcePath: c.SALES_PROMOTION_PROGRAM_RESOURCE_PATH,
+		schemaName: c.SALES_PROMOTION_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_RESOURCE_PATH,
 	}, {
-		schemaName: c.SALES_PROMOTION_CONDITION_GROUP_SCHEMA_NAME,
-		resourcePath: c.SALES_PROMOTION_CONDITION_GROUP_RESOURCE_PATH,
+		// Rules, rewards and selectors are written only while the promotion is draft or suspended.
+		schemaName: c.SALES_PROMOTION_RULE_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_RULE_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_RULE_PRODUCT_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_RULE_PRODUCT_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_RULE_CATEGORY_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_RULE_CATEGORY_RESOURCE_PATH,
 	}, {
 		schemaName: c.SALES_PROMOTION_REWARD_SCHEMA_NAME,
 		resourcePath: c.SALES_PROMOTION_REWARD_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_REWARD_PRODUCT_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_REWARD_PRODUCT_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_REWARD_CATEGORY_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_REWARD_CATEGORY_RESOURCE_PATH,
 	}, {
 		schemaName: c.SALES_COMBO_SCHEMA_NAME,
 		resourcePath: c.SALES_COMBO_RESOURCE_PATH,
@@ -154,12 +189,9 @@ function pricingSchemas() {
 		schemaName: c.SALES_COMBO_COMPONENT_SCHEMA_NAME,
 		resourcePath: c.SALES_COMBO_COMPONENT_RESOURCE_PATH,
 	}, {
-		schemaName: c.SALES_VOUCHER_CODE_SCHEMA_NAME,
-		resourcePath: c.SALES_VOUCHER_CODE_RESOURCE_PATH,
-	}, {
-		// Read-only over HTTP: redemption is what enforces a voucher's usage limit.
-		schemaName: c.SALES_VOUCHER_REDEMPTION_SCHEMA_NAME,
-		resourcePath: c.SALES_VOUCHER_REDEMPTION_RESOURCE_PATH,
+		// After the promotion each code unlocks.
+		schemaName: c.SALES_VOUCHER_SCHEMA_NAME,
+		resourcePath: c.SALES_VOUCHER_RESOURCE_PATH,
 	}];
 }
 
@@ -194,6 +226,22 @@ function documentSchemas() {
 		// request context rather than accepting one.
 		schemaName: c.SALES_MANUAL_DISCOUNT_SCHEMA_NAME,
 		resourcePath: c.SALES_MANUAL_DISCOUNT_RESOURCE_PATH,
+	}, {
+		// Read-only, like the four below: written by the order's promotion actions, Confirm and Cancel.
+		schemaName: c.SALES_ORDER_VOUCHER_SCHEMA_NAME,
+		resourcePath: c.SALES_ORDER_VOUCHER_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_ORDER_PROMOTION_SELECTION_SCHEMA_NAME,
+		resourcePath: c.SALES_ORDER_PROMOTION_SELECTION_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_APPLICATION_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_APPLICATION_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_PROMOTION_ALLOCATION_SCHEMA_NAME,
+		resourcePath: c.SALES_PROMOTION_ALLOCATION_RESOURCE_PATH,
+	}, {
+		schemaName: c.SALES_VOUCHER_ISSUANCE_SCHEMA_NAME,
+		resourcePath: c.SALES_VOUCHER_ISSUANCE_RESOURCE_PATH,
 	}, {
 		// Read-only: a kiosk sale's delivery, created by confirming the order and moved by the
 		// attempt and result actions. Its items carry the warehouse reservation each is held by.

@@ -1,13 +1,21 @@
 import * as dyn from '@nikkierp/common/dynamicModel';
 
 
+/**
+ * What a qualifying order receives. `free_shipping` is declared but never applies: Sales has no shipping line.
+ */
 export type SalesPromotionReward = {
 	id: string,
-	sales_promotion_program_id?: string,
-	sequence?: string,
+	promotion_id?: string,
 	reward_type?: string,
-	value?: string,
-	target_scope?: string,
+	order_description?: string,
+	discount_method?: string,
+	discount_value?: string,
+	discount_scope?: string,
+	max_discount_amount?: string,
+	gift_product_variant_id?: string,
+	gift_quantity?: string,
+	gift_uom_id?: string,
 	org_id?: string,
 	etag?: string,
 	created_at?: string,
@@ -24,9 +32,6 @@ export type GetSalesPromotionRewardSchemaResponse = dyn.RestGetModelSchemaRespon
 
 export type GetSalesPromotionRewardByIdRequest = dyn.RestGetByIdRequest;
 export type GetSalesPromotionRewardResponse = dyn.RestGetOneResponse<SalesPromotionReward>;
-
-export type SalesPromotionRewardExistsRequest = dyn.RestExistsRequest;
-export type SalesPromotionRewardExistsResponse = dyn.RestExistsResponse;
 
 export type SearchSalesPromotionRewardsRequest = dyn.RestSearchRequest;
 export type SearchSalesPromotionRewardsResponse = dyn.RestSearchResponse<SalesPromotionReward>;
