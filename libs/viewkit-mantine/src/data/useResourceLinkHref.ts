@@ -1,6 +1,9 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 
+import { useModuleRoutes } from './moduleRoutes';
+import { resolveRouteHref, useOwnerSlugOf } from './resourceHref';
+
 
 /**
  * Builds `/{moduleSlug}/{routePath}` for the current module,
@@ -10,13 +13,22 @@ import { useParams } from 'react-router-dom';
  * segments are filled from the current route, so a nested page
  * (`inventory_stock_transfer/:transfer_id/inventory_stock_move`) links to its own records.
  */
-export function useResourceBaseHref(routePath: string | undefined): string | undefined {
+export function useResourceBaseHref(routePath: string | undefined, pathPrefix?: string): string | undefined {
 	const params = useParams();
+	const moduleRoutes = useModuleRoutes();
+	const ownerSlugOf = useOwnerSlugOf();
 
-	return React.useMemo(
-		() => buildResourceBaseHref(params.moduleSlug, fillRouteParams(routePath, params)),
-		[params, routePath],
-	);
+	return React.useMemo(() => {
+		const filled = fillRouteParams(routePath, params);
+		if (!filled) {
+			return undefined;
+		}
+		// A bare path to a page this module does not serve goes to the module owning the schema, so a
+		// proxy page's tables link to the owner's pages instead of to pages that do not exist here.
+		return resolveRouteHref({
+			routePath: filled, pathPrefix, currentSlug: params.moduleSlug, moduleRoutes, ownerSlugOf,
+		});
+	}, [params, routePath, pathPrefix, moduleRoutes, ownerSlugOf]);
 }
 
 /**
@@ -28,8 +40,9 @@ export function useResourceBaseHref(routePath: string | undefined): string | und
 export function useResourceLinkHref(
 	linkField: string | undefined,
 	routePath: string | undefined,
+	pathPrefix?: string,
 ): (rowData: Record<string, unknown>) => string {
-	const baseHref = useResourceBaseHref(routePath);
+	const baseHref = useResourceBaseHref(routePath, pathPrefix);
 
 	return React.useCallback((rowData: Record<string, unknown>) => {
 		if (!linkField || !baseHref) {

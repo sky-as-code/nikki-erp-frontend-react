@@ -50,6 +50,14 @@ const microApps: MicroAppMetadata[] = [
 		schemaPrefix: ['inventory', 'purchase', 'sales'],
 	},
 	{
+		// Assembly (prod_*), Manufacturing (mftr_*) and Quality (quality_*) in one micro-app.
+		slug: 'production',
+		basePath: 'production',
+		bundleUrl: () => import('@nikkierp/microapp-production'),
+		htmlTag: 'nikkiapp-production',
+		schemaPrefix: ['prod', 'mftr', 'quality'],
+	},
+	{
 		slug: 'notification',
 		basePath: 'notification',
 		bundleUrl: () => import('@nikkierp/microapp-notification'),

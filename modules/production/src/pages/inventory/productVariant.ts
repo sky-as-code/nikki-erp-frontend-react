@@ -1,0 +1,298 @@
+// Proxy copy of commerce/src/pages/inventory/productVariant.ts
+// Kept identical by pages/proxyPages.test.ts; edit the owner, then copy it here.
+import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
+import {
+	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceImportProps, resourceListV2Props,
+	resourceSplitViewProps, statusStripProps,
+} from '@nikkierp/viewkit-mantine/props';
+
+import { buildVariantProductionResources } from './productVariantProduction';
+import * as c from '../../constants/inventory';
+import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
+import { PutawayRuleCommands } from '../../features/inventory/putawayRule/commands';
+import { StockMoveCommands } from '../../features/inventory/stockMove/commands';
+import { StockQuantCommands } from '../../features/inventory/stockQuant/commands';
+
+import type { ComponentNode } from '@nikkierp/viewengine/metadata';
+
+
+/** No currency field of its own: amounts are in the organization's currency. */
+const MONEY_RENDERER = { renderer: 'money' };
+const FLOAT_RENDERER = { renderer: 'float' };
+
+/** One colour map for the list badge and the detail status strip, so both read alike. */
+const STATUS_BADGE = {
+	renderer: 'enum',
+	colorMap: { active: 'green', discontinued: 'red' },
+	prefix: 'variant_status.',
+} as const;
+
+export function buildProductVariantPages(): PageNode[] {
+	const splitView = resourceSplitViewProps({
+		primary: buildProductVariantListProps(),
+		secondary: buildProductVariantDetailProps(),
+	});
+	// Import pilot: the list's "Import" entry navigates here. Static, so it outranks `:id`.
+	const importPage = resourceImportProps({
+		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		returnRoutePath: 'inventory_product_variant',
+	});
+
+	return [
+		definePage({ routePath: 'inventory_product_variant', template: splitView.template, props: splitView.props }),
+		definePage({ routePath: 'inventory_product_variant/import', template: importPage.template, props: importPage.props }),
+	];
+}
+
+function buildProductVariantListProps() {
+	return resourceListV2Props({
+		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		linkField: 'id',
+		searchCommand: ProductVariantCommands.SEARCH,
+		createEnabled: true,
+		importEnabled: true,
+		deleteCommand: ProductVariantCommands.DELETE,
+		archiveCommand: ProductVariantCommands.SET_IS_ARCHIVED,
+		updateSaveCommand: ProductVariantCommands.UPDATE,
+		updateCommand: ProductVariantCommands.UPDATE,
+		// Complete variants by default (PROD-023): a base is a placeholder awaiting its on-demand
+		// attributes and is never transacted. The condition seeds the filter panel, where it is
+		// switched to Base, or dropped for All.
+		initialGraph: COMPLETE_VARIANTS,
+		fieldRenderers: buildProductVariantFieldRenderers(),
+	});
+}
+
+/**
+ * How a variant row reads wherever variants are listed: this list and the template's Variants and
+ * Inventory tabs.
+ */
+export function buildProductVariantFieldRenderers() {
+	return {
+		attribute_summary: { renderer: 'attributePills' },
+		...buildProductVariantEnumRenderers(),
+		cost: MONEY_RENDERER,
+		effective_base_sales_price: MONEY_RENDERER,
+		on_hand_quantity: FLOAT_RENDERER,
+		reserved_quantity: FLOAT_RENDERER,
+		available_quantity: FLOAT_RENDERER,
+	};
+}
+
+/** The variant list's default columns less the template name, for a table that already sits on the template. */
+export const TEMPLATE_VARIANT_FIELDS = [
+	'sku', 'attribute_summary', 'effective_base_sales_price', 'cost', 'on_hand_quantity',
+	'product_template_uom_name', 'status',
+];
+
+/** The list's default filter, exported for its test. */
+export const COMPLETE_VARIANTS = { if: ['variant_kind', '=', 'complete'] };
+
+function buildProductVariantEnumRenderers() {
+	return {
+		// The base label names what it waits for, so it is not read as a sellable product.
+		variant_kind: { renderer: 'translated', prefix: 'variant_kind_label.' },
+		status: STATUS_BADGE,
+		archive_source: {
+			renderer: 'enum',
+			colorMap: { user: 'red', template_cascade: 'gray', system_sync: 'blue' },
+			prefix: 'archive_source.',
+		},
+	};
+}
+
+function buildProductVariantDetailRenderers() {
+	return {
+		...buildProductVariantEnumRenderers(),
+		cost: MONEY_RENDERER,
+		product_template_base_sales_price: MONEY_RENDERER,
+		effective_base_sales_price: MONEY_RENDERER,
+		weight: FLOAT_RENDERER,
+		length: FLOAT_RENDERER,
+		width: FLOAT_RENDERER,
+		height: FLOAT_RENDERER,
+	};
+}
+
+function buildProductVariantDetailProps() {
+	return resourceDetailV2Props({
+		schemaName: c.PRODUCT_VARIANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		...statusStripProps({
+			statuses: Object.keys(STATUS_BADGE.colorMap),
+			prefix: STATUS_BADGE.prefix,
+		}),
+		titleLvl1: { schemaField: 'display_name' },
+		titleLvl2: { schemaField: 'sku' },
+		backLinkTitle: { linkHref: '../' },
+		// A variant without an image of its own shows its template's.
+		thumbnail: {
+			field: 'preview_image',
+			fileIdField: 'preview_image_file_id',
+			fallbackFileIdField: 'product_template_preview_image_file_id',
+		},
+		fieldRenderers: buildProductVariantDetailRenderers(),
+		// Create shows the same blocks as edit; a field it cannot take renders as read-only `-`.
+		stableFieldLayout: true,
+		standardActionCommands: {
+			getById: ProductVariantCommands.GET_BY_ID,
+			create: ProductVariantCommands.CREATE,
+			update: ProductVariantCommands.UPDATE,
+			delete: ProductVariantCommands.DELETE,
+			archive: ProductVariantCommands.SET_IS_ARCHIVED,
+		},
+		createNodes: [buildProductVariantFieldsSection()],
+		childrenNodes: [buildProductVariantFieldsSection()],
+		relatedResources: buildVariantStockResources(),
+	});
+}
+
+/** Shared by both form modes: the resource's own fields, as titled blocks laid out side by side. */
+function buildProductVariantFieldsSection(): ComponentNode {
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
+		translationNs: c.INVENTORY_MODULE,
+		header: 'form.generalInformation',
+	}, [
+		resourceFormColumnNode({
+			header: 'form.identification',
+			fields: ['sku', 'display_name', 'primary_barcode', 'product_template_id'],
+		}),
+		// The variant-kind fields (variant_kind, base_variant_id, is_transaction_eligible) are internal to
+		// configuration and not displayed.
+		// Three fields that are deliberately three different things.
+		//
+		// `cost` is what the business values this variant at, and it is the only one a user
+		// types. It lives on the variant rather than the template because two variants of
+		// one product routinely cost different amounts.
+		//
+		// `template_base_sales_price` and `effective_base_sales_price` are both computed and
+		// read-only: the first is what the template asks for the product, the second adds
+		// what this variant's attribute values charge on top of it. Showing both is what
+		// makes the difference legible — a variant priced above its template is answering
+		// "because of the options", and one number alone cannot say that.
+		//
+		// A selling price is NOT here. What a customer pays is resolved from a Sales price
+		// list, and these are only the inputs to it.
+		resourceFormColumnNode({
+			header: 'form.pricing',
+			fields: [
+				{ fields: ['@@cost', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@product_template_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+				{ fields: ['@@effective_base_sales_price', '$$common:per', '@@product_template_uom_symbol'] },
+			],
+		}),
+		// Left empty, each of these inherits the template's default. Null means "inherited",
+		// never zero. See BR Â§6.4.
+		resourceFormColumnNode({
+			header: 'form.dimensions',
+			fields: [
+				{ fields: ['@@weight', '@@weight_uom_symbol'] },
+				{ fields: ['@@length', '@@dimension_uom_symbol'] },
+				{ fields: ['@@width', '@@dimension_uom_symbol'] },
+				{ fields: ['@@height', '@@dimension_uom_symbol'] },
+			],
+		}),
+		// archive_source is what lets unarchiving a template restore only the variants it
+		// took down, so it is shown rather than hidden; `status` is the status strip's. See BR Â§8.9.
+		resourceFormColumnNode({
+			header: 'form.audit',
+			fields: ['archive_source'],
+		}),
+	]);
+}
+
+/**
+ * The stock a variant holds, where it sits, how it has moved and where it gets put away.
+ *
+ * Product owns none of this. Each related tab reads a resource another part of the module owns and
+ * links through to the page that does own it, so a user sees the stock without Product acquiring
+ * a copy of it (CR Â§4.4, Â§6.1, Â§9). Nothing here offers a write: no tab names an update
+ * command, so there is no edit affordance to suppress and no way to set a balance from a product
+ * page (CR Â§6.2, AC-PROD-INT-034).
+ *
+ * They render only in update mode, which is correct: on `/product_variants/new` there is no id to
+ * filter by, and a variant that does not exist yet holds no stock.
+ *
+ * The quantities are shown as the quant rows that make them up rather than as one summary line.
+ * A related tab renders rows of a registered schema â€” it resolves a `modelSchema` and feeds a
+ * paged search into `ExcelDataTable` â€” and a computed on-hand/reserved/available record belongs to no
+ * schema. The rows carry the same numbers, per location. The scalar
+ * form is served by the `variant_stock_summary` action, which the list columns use.
+ */
+function buildVariantStockResources() {
+	return [
+		buildVariantInventoryResource(),
+		buildVariantMovementsResource(),
+		buildVariantPutawayResource(),
+		...buildVariantProductionResources(),
+	];
+}
+
+/** What the variant holds, and where. Rows link to the Stock Balance page that owns them. */
+function buildVariantInventoryResource() {
+	return {
+		label: 'product_variant_sections_inventory',
+		schemaName: c.STOCK_QUANT_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: StockQuantCommands.SEARCH,
+		initialGraph: { if: ['product_variant_id', '=', '${id}'] },
+		// The location's own status is on the location, not the quant, so a suspended
+		// place is badged on the Stock Balance page this links to (TS-PROD-05).
+		fields: [
+			'location_id', 'on_hand_quantity', 'reserved_quantity',
+			'available_quantity', 'base_uom_id', 'lot_id',
+		],
+		fieldRenderers: {
+			on_hand_quantity: FLOAT_RENDERER,
+			reserved_quantity: FLOAT_RENDERER,
+			available_quantity: FLOAT_RENDERER,
+		},
+		linkField: 'id',
+		linkRoutePath: 'inventory_stock_quant',
+		testId: 'inventory.variantInventory',
+	};
+}
+
+/** The variant's moves, open and completed alike; each row opens the stock transfer that carries it. */
+function buildVariantMovementsResource() {
+	return {
+		label: 'product_variant_sections_stock_transfers',
+		schemaName: c.STOCK_MOVE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: StockMoveCommands.SEARCH,
+		initialGraph: { if: ['product_variant_id', '=', '${id}'] },
+		fields: [
+			'status', 'demand_quantity', 'source_location_id',
+			'destination_location_id', 'scheduled_at',
+		],
+		fieldRenderers: { demand_quantity: FLOAT_RENDERER },
+		// Rows point at the transfer that carries them: a move has no page of its own,
+		// and the transfer is the document a user acts on.
+		linkField: 'transfer_id',
+		linkRoutePath: 'inventory_stock_transfer',
+		testId: 'inventory.variantMovements',
+	};
+}
+
+/** Where arriving goods of this product get put (CR Â§10). Read-only: the rules belong to Warehouse. */
+function buildVariantPutawayResource() {
+	return {
+		label: 'product_variant_sections_putaway',
+		schemaName: c.PUTAWAY_RULE_SCHEMA_NAME,
+		translationNs: c.INVENTORY_MODULE,
+		searchCommand: PutawayRuleCommands.SEARCH,
+		// Rules naming this specific product. A rule that matches by category applies to
+		// it too and is shown on the category page instead, where it is owned (CR Â§10.2).
+		initialGraph: { if: ['product_id', '=', '${id}'] },
+		fields: [
+			'code', 'warehouse_id', 'source_location_id',
+			'destination_location_id', 'priority',
+		],
+		linkField: 'id',
+		linkRoutePath: 'inventory_putaway_rule',
+		testId: 'inventory.variantPutaway',
+	};
+}

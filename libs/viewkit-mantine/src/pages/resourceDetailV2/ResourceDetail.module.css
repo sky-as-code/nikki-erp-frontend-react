@@ -24,6 +24,7 @@
  * section (a row of three on a wide panel) reads as one column and a stacked one spreads out.
  */
 .fieldGrid {
+	container-type: inline-size;
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
 	gap: var(--nikki-field-gap, 1.5rem);
@@ -77,11 +78,19 @@
 }
 
 /*
- * A long free-text field takes the whole grid row, by its data type, in every mode: a textarea (edit and
- * create) or its value (read, `.longText`) needs the width a 220px track does not have.
+ * A long free-text field (a description, a note) spans two tracks of the grid, by its data type, in every
+ * mode: a textarea (edit and create) or its value (read, `.longText`) needs more than one 220px track, but
+ * a whole wide row reads as a wall of text. A grid too narrow for two tracks gives it its one full row
+ * instead, so the span never adds an implicit column. 464px = two 220px tracks + the default 24px gap.
  */
 .fieldGrid > :has(textarea, > .longText) {
 	grid-column: 1 / -1;
+}
+
+@container (min-width: 464px) {
+	.fieldGrid > :has(textarea, > .longText) {
+		grid-column: span 2;
+	}
 }
 
 /* A field group display sits in one track of the grid; `isFullRow` gives it the whole row. */

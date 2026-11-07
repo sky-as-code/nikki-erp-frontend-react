@@ -7,10 +7,10 @@ import { resourceFileFieldPropsSchema } from './components/resourceFileField/pro
 import { resourceFormTabsPropsSchema } from './components/resourceFormTabs/props';
 import { settingsItemPropsSchema, settingsSectionPropsSchema } from './components/settings/props';
 import { tabCollapsibleSectionPropsSchema } from './components/tabCollapsibleSection/props';
-import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_STATUS_STRIP, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
+import { COLLAPSIBLE_SECTION, EXCEL_DATA_TABLE_BODY, PAGE_HEADER, RESOURCE_DETAIL_STATUS_STRIP, RESOURCE_DETAIL_V2_TEMPLATE, RESOURCE_FILE_FIELD, RESOURCE_FORM_COLUMN, RESOURCE_FORM_TABS, RESOURCE_GENERIC_PAGE_TEMPLATE, RESOURCE_IMPORT_TEMPLATE, RESOURCE_LIST_V2_TEMPLATE, RESOURCE_SPLIT_VIEW_TEMPLATE, RELATED_TABLE, SETTINGS_ITEM, SETTINGS_SECTION, TAB_COLLAPSIBLE_SECTION } from './ids';
 import { ownPropertySectionSchema } from './pages/resourceDetail/props';
 import { resourceStatusStripPropsSchema } from './pages/resourceDetailV2/form/resourceStatusStripProps';
-import { resourceDetailV2PropsSchema } from './pages/resourceDetailV2/props';
+import { relatedResourceSchema, resourceDetailV2PropsSchema } from './pages/resourceDetailV2/props';
 import { resourceGenericPagePropsSchema } from './pages/resourceGenericPage/props';
 import { resourceImportPropsSchema } from './pages/resourceImport/props';
 import { resourceListV2PropsSchema } from './pages/resourceListV2/props';
@@ -27,7 +27,7 @@ import type {
 import type { TabCollapsibleSectionPropsInput } from './components/tabCollapsibleSection/props';
 import type { OwnPropertySectionInput } from './pages/resourceDetail/props';
 import type { ResourceStatusStripPropsInput } from './pages/resourceDetailV2/form/resourceStatusStripProps';
-import type { ResourceDetailV2Props, ResourceDetailV2PropsInput } from './pages/resourceDetailV2/props';
+import type { RelatedResourceInput, ResourceDetailV2Props, ResourceDetailV2PropsInput } from './pages/resourceDetailV2/props';
 import type {
 	ResourceGenericPageProps, ResourceGenericPagePropsInput,
 } from './pages/resourceGenericPage/props';
@@ -174,6 +174,18 @@ export function resourceFormColumnNode(input: OwnPropertySectionInput): Componen
 	return defineComponent({
 		component: RESOURCE_FORM_COLUMN,
 		props: ownPropertySectionSchema.parse(input) as Record<string, unknown>,
+	});
+}
+
+/**
+ * A related resource's table placed where the page wants it, typically inside a
+ * `collapsibleSectionNode` of `childrenNodes`, instead of as a tab of the related-resources section.
+ * Same props as a `relatedResources` entry; update mode only, since `initialGraph` needs the `${id}`.
+ */
+export function relatedTableNode(input: RelatedResourceInput): ComponentNode {
+	return defineComponent({
+		component: RELATED_TABLE,
+		props: relatedResourceSchema.parse(input) as Record<string, unknown>,
 	});
 }
 

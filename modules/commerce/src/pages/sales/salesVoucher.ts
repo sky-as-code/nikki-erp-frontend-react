@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import { APPLICATION_STATUS_BADGE, MONEY_RENDERER, VOUCHER_AVAILABILITY_BADGE } from './promotionShared';
@@ -66,6 +67,11 @@ function buildSalesVoucherDetailProps() {
 		translationNs: c.SALES_MODULE,
 		titleLvl1: { schemaField: 'code' },
 		titleLvl2: { schemaField: 'availability' },
+		...statusStripProps({
+			statuses: Object.keys(VOUCHER_STATUS_BADGE.colorMap),
+			prefix: VOUCHER_STATUS_BADGE.prefix,
+			alternativeEnds: ['revoked'],
+		}),
 		backLinkTitle: { linkHref: '../' },
 		fieldRenderers: {
 			status: VOUCHER_STATUS_BADGE,
@@ -94,7 +100,7 @@ function buildSalesVoucherFieldsSection(isUpdate: boolean): ComponentNode {
 	}, [
 		resourceFormColumnNode({
 			header: 'form.voucher',
-			fields: ['promotion_id', 'code', ...(isUpdate ? ['voucher_type', 'status', 'availability'] : []),
+			fields: ['promotion_id', 'code', ...(isUpdate ? ['voucher_type', 'availability'] : []),
 				'customer_id'],
 			readOnlyFields: isUpdate ? READ_ONLY_AFTER_CREATE : undefined,
 		}),

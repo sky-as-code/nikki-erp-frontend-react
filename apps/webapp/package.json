@@ -29,6 +29,7 @@
 		"@nikkierp/common": "workspace:*",
 		"@nikkierp/microapp-accounting": "workspace:*",
 		"@nikkierp/microapp-commerce": "workspace:*",
+		"@nikkierp/microapp-production": "workspace:*",
 		"@nikkierp/microapp-essential": "workspace:*",
 		"@nikkierp/microapp-identity": "workspace:*",
 		"@nikkierp/microapp-notification": "workspace:*",

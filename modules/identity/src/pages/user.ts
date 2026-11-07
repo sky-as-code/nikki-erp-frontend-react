@@ -1,7 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFileFieldNode, resourceFormColumnNode, resourceListV2Props,
-	resourceSplitViewProps,
+	resourceSplitViewProps, statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -68,15 +68,11 @@ function buildUserDetailProps() {
 		titleLvl2: { schemaField: 'email' },
 		backLinkTitle: { linkHref: '../' },
 		thumbnail: { field: 'avatar', fileIdField: 'avatar_file_id' },
-		allStatuses: [
-			{ value: 'draft', label: 'status.draft' },
-			{ value: 'invited', label: 'status.invited' },
-			{ value: 'active', label: 'status.active' },
-			{ value: 'suspended', label: 'status.suspended', alternativeEnd: true },
-		],
-		currentStatus: { schemaField: 'status' },
-		// In General Information's header rather than the toolbar, as on every detail page with a status.
-		statusPlacement: 'firstSectionHeader',
+		...statusStripProps({
+			statuses: ['draft', 'invited', 'active', 'suspended'],
+			prefix: 'status.',
+			alternativeEnds: ['suspended'],
+		}),
 		standardActionCommands: {
 			getById: UserCommands.GET_BY_ID,
 			create: UserCommands.CREATE,

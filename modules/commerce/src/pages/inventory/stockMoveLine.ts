@@ -81,7 +81,7 @@ function buildStockMoveLineFieldsSection(): ComponentNode {
 		resourceFormColumnNode({
 			// A read-mode field with no value is hidden, so an untracked line does not show this block.
 			header: 'form.identification',
-			fields: ['lot_ref', 'package_ref', 'result_package_ref', 'owner_ref'],
+			fields: ['lot_id', 'lot_name', 'package_ref', 'result_package_ref', 'owner_ref'],
 		}),
 	]);
 }

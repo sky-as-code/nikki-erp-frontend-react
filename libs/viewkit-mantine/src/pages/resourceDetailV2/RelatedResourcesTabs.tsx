@@ -122,7 +122,7 @@ function TabLabel({ resource, value }: { resource: RelatedResource, value: strin
  * Keyed on the interpolated scope, so selecting another parent record (the next row of a split
  * view) starts its table afresh -- page, sort and filters belong to the record they were set on.
  */
-function RelatedResourceTable({ resource }: { resource: RelatedResource }): React.ReactNode {
+export function RelatedResourceTable({ resource }: { resource: RelatedResource }): React.ReactNode {
 	const graph = useInterpolatedGraph(resource.initialGraph);
 	return <ScopedRelatedResourceTable key={JSON.stringify(graph.value ?? null)} resource={resource} graph={graph} />;
 }
@@ -145,7 +145,7 @@ function ScopedRelatedResourceTable({ resource, graph }: ScopedRelatedResourceTa
 	});
 	const { pack, searchData } = search;
 	const assignment = useAssignmentWriteProps(resource);
-	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath);
+	const buildLinkHref = useResourceLinkHref(resource.linkField, resource.linkRoutePath, resource.linkPathPrefix);
 	const editing = useIsFormEditing();
 	const testId = resourceTestIdPrefix({ testId: resource.testId, schemaName: resource.schemaName, part: 'Table' });
 	const relatedSchemas = useTableRelatedSchemas(
@@ -231,7 +231,7 @@ function RelatedActions({ resource, graph, editing }: {
 	// Both namespaces: "View all" is a standard label from `common`, while a page's own extra
 	// actions name keys in its module.
 	const t = useTranslate([resource.translationNs, 'common']);
-	const viewAllHref = useResourceBaseHref(resource.linkRoutePath);
+	const viewAllHref = useResourceBaseHref(resource.linkRoutePath, resource.linkPathPrefix);
 	const extraActions = useTableActionLocks(resource.extraActions, resource.schemaName)
 		.filter(action => !(editing && action.routePath));
 	return (

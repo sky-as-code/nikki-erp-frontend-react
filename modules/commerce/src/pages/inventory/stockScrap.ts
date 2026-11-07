@@ -115,7 +115,7 @@ function buildStockScrapFieldsSection(): ComponentNode {
 			// Empty until a lot, package or owner narrows which goods are scrapped â€” a read-mode
 			// field with no value is hidden, so an untracked scrap does not show this block.
 			header: 'form.identification',
-			fields: ['lot_ref', 'package_ref', 'owner_ref'],
+			fields: ['lot_id', 'package_ref', 'owner_ref'],
 		}),
 		resourceFormColumnNode({
 			header: 'form.reason',

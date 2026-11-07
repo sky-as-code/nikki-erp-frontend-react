@@ -16,5 +16,8 @@ export const STOCK_TRANSFER_MOVES = 'nikkierp.inventory.components.stockTransfer
 /** The Moves section header's "All moves" link, to the transfer's move list. */
 export const STOCK_TRANSFER_ALL_MOVES = 'nikkierp.inventory.components.stockTransferAllMoves.v1';
 
+/** The move detail's Detailed operations: the lots and quantities each line of the move takes or receives. */
+export const MOVE_DETAILED_OPERATIONS = 'nikkierp.inventory.components.moveDetailedOperations.v1';
+
 /** The template Attributes section header's right segment: Resolve variant and "All attributes". */
 export const TEMPLATE_ATTRIBUTES_HEADER = 'nikkierp.inventory.components.templateAttributesHeader.v1';

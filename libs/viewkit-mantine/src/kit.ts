@@ -3,6 +3,7 @@ import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 import { collapsibleSectionRenderer } from './components/collapsibleSection/CollapsibleSection';
 import { excelDataTableBodyRenderer } from './components/excelDataTableBody/ExcelDataTableBody';
 import { pageHeaderRenderer } from './components/pageHeader/PageHeader';
+import { relatedTableRenderer } from './components/relatedTable/RelatedTable';
 import { resourceFileFieldRenderer } from './components/resourceFileField/ResourceFileField';
 import { resourceFormTabsRenderer } from './components/resourceFormTabs/ResourceFormTabs';
 import { resourceSplitViewRenderer } from './components/resourceSplitView';
@@ -54,6 +55,7 @@ export const mantineViewKit: IViewKit = {
 		registry.registerComponentRenderer(tabCollapsibleSectionRenderer);
 		registry.registerComponentRenderer(excelDataTableBodyRenderer);
 		registry.registerComponentRenderer(resourceFileFieldRenderer);
+		registry.registerComponentRenderer(relatedTableRenderer);
 		registry.registerComponentRenderer(settingsSectionRenderer);
 		registry.registerComponentRenderer(settingsItemRenderer);
 		registry.registerComponentRenderer(resourceFormTabsRenderer);

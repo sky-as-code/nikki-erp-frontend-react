@@ -13,6 +13,7 @@
 		"test:watch": "vitest"
 	},
 	"devDependencies": {
+		"@babel/plugin-proposal-decorators": "~7.29.0",
 		"@hookform/resolvers": "~5.2.2",
 		"@mantine/core": "~9.1.1",
 		"@mantine/dates": "~9.1.1",

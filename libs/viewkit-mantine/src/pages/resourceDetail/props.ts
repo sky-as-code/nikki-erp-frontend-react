@@ -112,12 +112,15 @@ export const ownPropertySectionSchema = z.object({
 	 * whose `targetField` equals it are offered; an empty source narrows nothing. `graph` is a static
 	 * search graph on the target schema: it narrows the dropdown too, but the "Browse all" picker
 	 * opens with it as filter conditions the user may remove, while `matchFormFields` stays locked
-	 * there. Presentation only: the server validates the reference either way.
+	 * there. `fixedGraph` is a static graph that narrows both the dropdown and the picker and stays
+	 * locked in the picker, like `matchFormFields`: use it for a rule the reference must meet (e.g. only
+	 * serial-tracked variants). Presentation only: the server validates the reference either way.
 	 */
 	relationSearch: z.record(z.string(), z.object({
 		searchField: z.string().min(1).optional(),
 		matchFormFields: z.record(z.string(), z.string().min(1)).optional(),
 		graph: initialGraphSchema.optional(),
+		fixedGraph: initialGraphSchema.optional(),
 	}).strict()).optional(),
 });
 

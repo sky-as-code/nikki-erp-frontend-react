@@ -73,6 +73,7 @@ function buildProductTemplateEnumRenderers() {
 	return {
 		status: STATUS_BADGE,
 		product_type: { renderer: 'translated', prefix: PRODUCT_TYPE_PREFIX },
+		inventory_tracking: { renderer: 'translated', prefix: 'inventory_tracking.' },
 	};
 }
 
@@ -112,8 +113,8 @@ function buildProductTemplateDetailProps() {
 			archive: ProductTemplateCommands.SET_IS_ARCHIVED,
 		},
 		contextualActions: buildTemplateContextualActions(),
-		createNodes: [buildProductTemplateFieldsSection(), buildTemplateAttributesSection()],
-		childrenNodes: [buildProductTemplateFieldsSection(), buildTemplateAttributesSection()],
+		createNodes: buildProductTemplateSections(),
+		childrenNodes: buildProductTemplateSections(),
 		relatedResources: buildTemplateResources(),
 	});
 }
@@ -171,9 +172,24 @@ function buildProductTemplateFieldsSection(): ComponentNode {
 		header: 'form.generalInformation',
 	}, [
 		...buildProductTemplateIdentityColumns(),
-		...buildProductTemplateCommercialColumns(),
 		...buildProductTemplatePhysicalColumns(),
 	]);
+}
+
+function buildProductTemplateSections(): ComponentNode[] {
+	return [
+		buildProductTemplateFieldsSection(), buildProductTemplateTradingSection(), buildTemplateAttributesSection(),
+	];
+}
+
+/** Selling and buying, a section of their own below the general information and open by default. */
+function buildProductTemplateTradingSection(): ComponentNode {
+	return collapsibleSectionNode({
+		layout: 'formBlocks',
+		translationNs: c.INVENTORY_MODULE,
+		header: 'form.trading',
+		expanded: true,
+	}, buildProductTemplateCommercialColumns());
 }
 
 function buildProductTemplateIdentityColumns(): ComponentNode[] {
@@ -184,6 +200,8 @@ function buildProductTemplateIdentityColumns(): ComponentNode[] {
 			header: 'form.identification',
 			fields: ['name', 'short_name', 'category_id', 'brand_id'],
 		}),
+		// How stock of the product is followed: empty keeps no stock, else by quantity, lot or serial.
+		resourceFormColumnNode({ header: 'form.inventory', fields: ['inventory_tracking'] }),
 	];
 }
 

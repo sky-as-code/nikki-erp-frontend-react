@@ -4,6 +4,7 @@ import {
 	resourceSplitViewProps, statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
+import { buildVariantProductionResources } from './productVariantProduction';
 import * as c from '../../constants/inventory';
 import { ProductVariantCommands } from '../../features/inventory/productVariant/commands';
 import { PutawayRuleCommands } from '../../features/inventory/putawayRule/commands';
@@ -157,11 +158,8 @@ function buildProductVariantFieldsSection(): ComponentNode {
 			header: 'form.identification',
 			fields: ['sku', 'display_name', 'primary_barcode', 'product_template_id'],
 		}),
-		// A base holds the instant values only; its completes add the dynamic ones and link back.
-		resourceFormColumnNode({
-			header: 'form.variantKind',
-			fields: ['variant_kind', 'base_variant_id', 'is_transaction_eligible'],
-		}),
+		// The variant-kind fields (variant_kind, base_variant_id, is_transaction_eligible) are internal to
+		// configuration and not displayed.
 		// Three fields that are deliberately three different things.
 		//
 		// `cost` is what the business values this variant at, and it is the only one a user
@@ -227,6 +225,7 @@ function buildVariantStockResources() {
 		buildVariantInventoryResource(),
 		buildVariantMovementsResource(),
 		buildVariantPutawayResource(),
+		...buildVariantProductionResources(),
 	];
 }
 
@@ -242,7 +241,7 @@ function buildVariantInventoryResource() {
 		// place is badged on the Stock Balance page this links to (TS-PROD-05).
 		fields: [
 			'location_id', 'on_hand_quantity', 'reserved_quantity',
-			'available_quantity', 'base_uom_id', 'lot_ref',
+			'available_quantity', 'base_uom_id', 'lot_id',
 		],
 		fieldRenderers: {
 			on_hand_quantity: FLOAT_RENDERER,

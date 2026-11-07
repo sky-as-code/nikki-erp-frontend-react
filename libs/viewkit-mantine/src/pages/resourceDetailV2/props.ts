@@ -94,6 +94,7 @@ export const resourceDetailV2PropsSchema = resourceDetailPropsSchema.extend({
 }).strict();
 
 export type RelatedResource = z.infer<typeof relatedResourceSchema>;
+export type RelatedResourceInput = z.input<typeof relatedResourceSchema>;
 export type RelatedAssignment = z.infer<typeof relatedAssignmentSchema>;
 export type ResourceDetailV2Props = z.infer<typeof resourceDetailV2PropsSchema>;
 export type ResourceDetailV2PropsInput = z.input<typeof resourceDetailV2PropsSchema>;

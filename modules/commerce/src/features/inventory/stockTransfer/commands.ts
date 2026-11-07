@@ -28,6 +28,7 @@ export const StockTransferCommands = Object.freeze({
 	VALIDATE: `${PREFIX}.validate`,
 	CANCEL: `${PREFIX}.cancel`,
 	CREATE_RETURN: `${PREFIX}.create_return`,
+	SET_MOVE_LINES: `${PREFIX}.set_move_lines`,
 } as const);
 
 /**
@@ -52,6 +53,10 @@ export function registerStockTransferCommands(bus: ICommandBus): () => void {
 		bus.subscribe(
 			StockTransferCommands.CREATE_RETURN,
 			cmd => stockTransferService.createReturn(request(cmd)),
+		),
+		bus.subscribe(
+			StockTransferCommands.SET_MOVE_LINES,
+			cmd => stockTransferService.setMoveLines(request(cmd)),
 		),
 	];
 

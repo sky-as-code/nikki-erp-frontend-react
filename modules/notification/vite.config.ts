@@ -31,7 +31,19 @@ export default defineConfig({
 	},
 	plugins: [
 		tsconfigPaths(),
-		react(),
+		// Service classes are annotated with TC39 decorators (`@storeService`). Oxc, the
+		// default transformer, does not implement them: it passes the decorator through
+		// verbatim, which neither browsers nor Node (vitest) can parse ("Invalid or
+		// unexpected token"). Routing these files through Babel with the decorators plugin
+		// compiles them away. `version: '2023-11'` is the stage-3 standard semantics the
+		// runtime `storeService` is written against, not the legacy `experimentalDecorators` form.
+		react({
+			babel: {
+				plugins: [
+					['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+				],
+			},
+		}),
 	],
 	resolve: {
 		alias: {

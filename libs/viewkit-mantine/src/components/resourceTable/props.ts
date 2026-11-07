@@ -90,6 +90,12 @@ export const resourceTablePropsSchema = z.object({
 	 * A users table inside the roles page sets `'users'` → `/{org}/{mod}/users/:id`.
 	 */
 	linkRoutePath: z.string().min(1).optional(),
+	/**
+	 * Module prefix of `linkRoutePath`, e.g. `/production`, for a module implementing neighbour proxy
+	 * pages. Without it a bare `linkRoutePath` the current module does not serve goes to the micro-app
+	 * owning the schema (see `useResourceHref`).
+	 */
+	linkPathPrefix: z.string().min(1).optional(),
 	fieldRenderers: z.record(z.string(), fieldRendererSpecSchema).optional(),
 	/**
 	 * Renders a standard "View all" link to `linkRoutePath`'s list page, beside Refresh.

@@ -22,6 +22,7 @@ import { registerStockScrapCommands } from '../features/inventory/stockScrap/com
 import { registerStockTransferCommands } from '../features/inventory/stockTransfer/commands';
 import { registerStorageCategoryCommands } from '../features/inventory/storageCategory/commands';
 import { registerSupplyRelationCommands } from '../features/inventory/supplyRelation/commands';
+import { registerTrackingCodeCommands } from '../features/inventory/trackingCode/commands';
 import { registerWarehouseCommands } from '../features/inventory/warehouse/commands';
 import { buildBrandPages } from '../pages/inventory/brand';
 import { buildInventoryLocationPages } from '../pages/inventory/inventoryLocation';
@@ -41,6 +42,7 @@ import { buildStockScrapPages } from '../pages/inventory/stockScrap';
 import { buildStockTransferPages } from '../pages/inventory/stockTransfer';
 import { buildStorageCategoryPages } from '../pages/inventory/storageCategory';
 import { buildSupplyRelationPages } from '../pages/inventory/supplyRelation';
+import { buildTrackingCodePages } from '../pages/inventory/trackingCode';
 import { buildWarehousePages } from '../pages/inventory/warehouse';
 import { contributeInventoryViewKit } from '../viewkit/inventory/kit';
 
@@ -56,6 +58,7 @@ export function registerInventory(host: HostServices): void {
 	contributeInventoryViewKit(host.viewEngine);
 	registerProductCategoryCommands(host.commandBus);
 	registerBrandCommands(host.commandBus);
+	registerTrackingCodeCommands(host.commandBus);
 	registerProductAttributeCommands(host.commandBus);
 	registerProductAttributeValueCommands(host.commandBus);
 	registerProductTemplateCommands(host.commandBus);
@@ -86,6 +89,7 @@ export function buildInventoryPages(): PageNode[] {
 		...buildProductVariantPages(),
 		...buildProductCategoryPages(),
 		...buildBrandPages(),
+		...buildTrackingCodePages(),
 		...buildProductAttributePages(),
 		...buildProductAttributeValuePages(),
 		...buildProductTemplateAttributeValuePages(),
@@ -111,6 +115,9 @@ function registerModelSchemas(): void {
 	}, {
 		schemaName: c.BRAND_SCHEMA_NAME,
 		resourcePath: c.BRAND_RESOURCE_PATH,
+	}, {
+		schemaName: c.TRACKING_CODE_SCHEMA_NAME,
+		resourcePath: c.TRACKING_CODE_RESOURCE_PATH,
 	}, {
 		schemaName: c.PRODUCT_ATTRIBUTE_SCHEMA_NAME,
 		resourcePath: c.PRODUCT_ATTRIBUTE_RESOURCE_PATH,
