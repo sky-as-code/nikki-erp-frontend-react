@@ -111,7 +111,7 @@ function buildStockQuantBalanceColumns(): ComponentNode[] {
 			// Empty until a lot, package or owner actually narrows the balance â€” a read-mode field
 			// with no value is hidden, so an untracked balance simply does not show this block.
 			header: 'form.identification',
-			fields: ['lot_ref', 'package_ref', 'owner_ref'],
+			fields: ['lot_id', 'package_ref', 'owner_ref'],
 		}),
 	];
 }

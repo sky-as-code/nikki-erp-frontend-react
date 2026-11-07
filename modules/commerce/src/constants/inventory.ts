@@ -6,6 +6,8 @@ export const INVENTORY_MODULE = 'inventory';
 // product_attribute,product_attribute_value,product_template,product_variant}.go.
 export const PRODUCT_CATEGORY_SCHEMA_NAME = 'inventory_product_category';
 export const BRAND_SCHEMA_NAME = 'inventory_brand';
+/** A lot or serial number of one tracked variant (BR inventory/06). */
+export const TRACKING_CODE_SCHEMA_NAME = 'inventory_tracking_code';
 export const PRODUCT_ATTRIBUTE_SCHEMA_NAME = 'inventory_product_attribute';
 export const PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME = 'inventory_product_attribute_value';
 export const PRODUCT_TEMPLATE_SCHEMA_NAME = 'inventory_product_template';
@@ -77,6 +79,7 @@ export const PRODUCT_VARIANT_ATTRIBUTE_VALUE_SCHEMA_NAME = 'inventory_product_va
  */
 export const PRODUCT_CATEGORY_RESOURCE_PATH = `v1/inventory/${PRODUCT_CATEGORY_SCHEMA_NAME}`;
 export const BRAND_RESOURCE_PATH = `v1/inventory/${BRAND_SCHEMA_NAME}`;
+export const TRACKING_CODE_RESOURCE_PATH = `v1/inventory/${TRACKING_CODE_SCHEMA_NAME}`;
 export const PRODUCT_ATTRIBUTE_RESOURCE_PATH = `v1/inventory/${PRODUCT_ATTRIBUTE_SCHEMA_NAME}`;
 export const PRODUCT_ATTRIBUTE_VALUE_RESOURCE_PATH = `v1/inventory/${PRODUCT_ATTRIBUTE_VALUE_SCHEMA_NAME}`;
 export const PRODUCT_TEMPLATE_RESOURCE_PATH = `v1/inventory/${PRODUCT_TEMPLATE_SCHEMA_NAME}`;

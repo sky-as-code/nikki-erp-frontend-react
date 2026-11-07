@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -63,13 +64,11 @@ function buildOrganizationDetailProps() {
 		titleLvl1: { schemaField: 'display_name' },
 		titleLvl2: { schemaField: 'slug' },
 		backLinkTitle: { linkHref: '../' },
-		allStatuses: [
-			{ value: 'provisioning', label: 'status.provisioning' },
-			{ value: 'ready', label: 'status.ready' },
-			{ value: 'deleted', label: 'status.deleted', alternativeEnd: true },
-		],
-		currentStatus: { schemaField: 'status' },
-		statusPlacement: 'firstSectionHeader',
+		...statusStripProps({
+			statuses: ['provisioning', 'ready', 'deleted'],
+			prefix: 'status.',
+			alternativeEnds: ['deleted'],
+		}),
 		standardActionCommands: {
 			getById: OrganizationCommands.GET_BY_ID,
 			create: OrganizationCommands.CREATE,

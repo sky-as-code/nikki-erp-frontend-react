@@ -35,6 +35,8 @@ export const COLLAPSIBLE_SECTION = 'nikkierp.mantine.components.collapsibleSecti
 export const EXCEL_DATA_TABLE_BODY = 'nikkierp.mantine.components.excelDataTable.tableBody.v1';
 export const RESOURCE_FORM_COLUMN = 'nikkierp.mantine.components.resourceForm.column.v1';
 export const RESOURCE_FILE_FIELD = 'nikkierp.mantine.components.resourceForm.fileField.v1';
+/** One related resource's table on its own, for a section of a detail page rather than a related tab. */
+export const RELATED_TABLE = 'nikkierp.mantine.components.relatedTable.v1';
 
 /**
  * The detail template's form components. Pages author columns with the `.v1` `RESOURCE_FORM_COLUMN`

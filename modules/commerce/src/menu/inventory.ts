@@ -28,11 +28,15 @@ function transferListLink(code: OperationCode): string {
 const ITEMS: MenuItem[] = [
 	{
 		// A variant is the concrete, transactable form of a template, so the two belong together
-		// rather than as siblings of everything else.
+		// rather than as siblings of everything else; the tracking codes, categories and attributes
+		// that describe products sit beside them.
 		labelKey: 'menu_products',
 		items: [
 			{ labelKey: 'menu_products', link: '/inventory_product_template' },
 			{ labelKey: 'menu_productVariants', link: '/inventory_product_variant' },
+			{ labelKey: 'menu_trackingCodes', link: '/inventory_tracking_code' },
+			{ labelKey: 'menu_productCategories', link: '/inventory_product_category' },
+			{ labelKey: 'menu_attributes', link: '/inventory_product_attribute' },
 		],
 	},
 	{
@@ -88,9 +92,7 @@ const ITEMS: MenuItem[] = [
 			// resource, so it sits with the other things configured once and then referenced,
 			// not under Stock where it used to live.
 			{ labelKey: 'menu_locations', link: '/inventory_location' },
-			{ labelKey: 'menu_productCategories', link: '/inventory_product_category' },
 			{ labelKey: 'menu_brands', link: '/inventory_brand' },
-			{ labelKey: 'menu_attributes', link: '/inventory_product_attribute' },
 			// How each kind of transfer behaves: its defaults and the policies a transfer copies.
 			{ labelKey: 'menu_operationTypes', link: '/inventory_stock_operation_type' },
 		],

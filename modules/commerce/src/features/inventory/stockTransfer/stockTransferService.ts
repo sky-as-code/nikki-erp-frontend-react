@@ -75,6 +75,15 @@ export class StockTransferService extends StoreCrudServiceBase {
 	}
 
 	/**
+	 * Replaces one move's lines with the lots and quantities the user detailed (BR inventory/06 §6.4).
+	 * The body carries `move_id` and `lines: [{lot_id | lot_name, quantity, source_location_id?,
+	 * destination_location_id?}]`.
+	 */
+	public setMoveLines(request: dyn.RestMutateOneRequest): Promise<ServiceResult<dyn.RestMutateResponse>> {
+		return this.runOperation(request, 'set_move_lines');
+	}
+
+	/**
 	 * Posts to `{resource}/{id}/{action}`.
 	 *
 	 * It goes through manageM2m because that is the only base-class method that posts to an

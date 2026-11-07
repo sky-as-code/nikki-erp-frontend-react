@@ -1,11 +1,13 @@
-import { Anchor } from '@mantine/core';
-import { Link, TranslatableText } from '@nikkierp/ui/components';
+import { TranslatableText } from '@nikkierp/ui/components';
 import { toLangJson } from '@nikkierp/ui/components/ExcelDataTable';
-import { useMicroAppManager } from '@nikkierp/ui/microApp';
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
 import { edgeDisplay } from '../data/edgeDisplay';
 import { readFieldValue } from '../data/fieldPaths';
+import { useModuleRoutes } from '../data/moduleRoutes';
+import { resolveRouteModule, useOwnerSlugOf } from '../data/resourceHref';
+import { ResourceLink } from './resourceLink/ResourceLink';
 
 import type * as dyn from '@nikkierp/common/dynamicModel';
 
@@ -31,11 +33,18 @@ export function EdgeFieldValue({
 	/** Rendered whenever the edge cannot be shown as a label — normally the raw id. */
 	fallback: React.ReactNode,
 }): React.ReactNode {
-	const manager = useMicroAppManager();
+	const ownerSlugOf = useOwnerSlugOf();
+	const moduleRoutes = useModuleRoutes();
+	const params = useParams();
 	const edge = readFieldValue(fieldValues, relation.edge) as Record<string, unknown> | null;
-	const display = edgeDisplay(
-		relation, labelField, edge, manager.findOwnerSlug(relation.dest_schema_name),
-	);
+	// The module serving the destination: this one when it has the page (or a proxy copy of it), else
+	// the micro-app owning the schema.
+	const targetSlug = moduleRoutes
+		? resolveRouteModule({
+			routePath: relation.dest_schema_name, currentSlug: params.moduleSlug, moduleRoutes, ownerSlugOf,
+		})
+		: ownerSlugOf(relation.dest_schema_name);
+	const display = edgeDisplay(relation, labelField, edge, targetSlug);
 
 	if (display.kind === 'fallback') {
 		return fallback;
@@ -49,5 +58,7 @@ export function EdgeFieldValue({
 	if (display.kind === 'text') {
 		return text;
 	}
-	return <Anchor component={Link} to={display.href} mode='append'>{text}</Anchor>;
+	return (
+		<ResourceLink schemaName={relation.dest_schema_name} recordId={String(edge?.['id'])}>{text}</ResourceLink>
+	);
 }

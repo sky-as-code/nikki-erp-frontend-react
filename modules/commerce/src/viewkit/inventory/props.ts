@@ -1,7 +1,8 @@
 import { defineComponent } from '@nikkierp/viewengine/metadata';
 
 import {
-	ATTRIBUTE_VALUES, STOCK_TRANSFER_ALL_MOVES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES, TEMPLATE_ATTRIBUTES_HEADER,
+	ATTRIBUTE_VALUES, MOVE_DETAILED_OPERATIONS, STOCK_TRANSFER_ALL_MOVES, STOCK_TRANSFER_MOVES, TEMPLATE_ATTRIBUTES,
+	TEMPLATE_ATTRIBUTES_HEADER,
 } from './ids';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
@@ -39,6 +40,11 @@ export function stockTransferMovesNode(): ComponentNode {
 /** "All moves", for the Moves section header's `rightSegment`; hidden while the transfer is edited. */
 export function stockTransferAllMovesNode(): ComponentNode {
 	return defineComponent({ component: STOCK_TRANSFER_ALL_MOVES });
+}
+
+/** The move's Detailed operations button and dialog, for the move detail's fields section header. */
+export function moveDetailedOperationsNode(): ComponentNode {
+	return defineComponent({ component: MOVE_DETAILED_OPERATIONS });
 }
 
 export * from './ids';

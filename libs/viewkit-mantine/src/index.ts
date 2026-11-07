@@ -45,6 +45,11 @@ export type {
  * shape by hand: `/{orgSlug}/{moduleSlug}/{routePath}/{id}` is owned here.
  */
 export { useResourceBaseHref, useResourceLinkHref, useRoutePathHref } from './data/useResourceLinkHref';
+export { useResourceHref } from './data/resourceHref';
+export type { ResourceTarget } from './data/resourceHref';
+export { ResourceLink } from './components/resourceLink/ResourceLink';
+export type { ResourceLinkProps } from './components/resourceLink/ResourceLink';
+export { OwnerMicroAppGate } from './components/ownerMicroAppGate/OwnerMicroAppGate';
 /**
  * Action locks, for a module's hand-written button. The derived requirement is the backend's own
  * `{action}:{schemaName}:{scope}`, so a bespoke page locks on exactly what the server asserts.

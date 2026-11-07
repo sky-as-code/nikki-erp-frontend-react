@@ -5,6 +5,8 @@ import { compilePage } from '@nikkierp/viewengine/metadata';
 import { useViewEngine } from '@nikkierp/viewengine/render';
 import React from 'react';
 
+import { OwnerMicroAppGate } from './components/ownerMicroAppGate/OwnerMicroAppGate';
+import { buildModuleRoutes, ModuleRoutesContext, routeRoot } from './data/moduleRoutes';
 import { PageReadGuard } from './permissions/PageReadGuard';
 
 import type { WidgetComponentProps } from '@nikkierp/ui/microApp';
@@ -44,6 +46,12 @@ export type EngineProps = {
 	 * no settings pane while `essential` -- which drives `MicroAppRouter` directly -- did.
 	 */
 	widgets?: WidgetDefinition[],
+	/**
+	 * Proxy pages: copies of another micro-app's pages, by route path → slug of the owning micro-app.
+	 * Each renders only once its owner is loaded, since the copy relies on the owner's view-kit
+	 * components and services; and links to these routes stay in this module.
+	 */
+	proxyPages?: Record<string, string>,
 };
 
 export function ViewEngineRouter({ microAppProps, engineProps }: ViewEngineRouterProps): React.ReactNode {
@@ -54,29 +62,41 @@ export function ViewEngineRouter({ microAppProps, engineProps }: ViewEngineRoute
 	);
 
 	const widgets = engineProps.widgets;
+	const proxyPages = engineProps.proxyPages;
+	const moduleRoutes = React.useMemo(
+		() => buildModuleRoutes(compiled.map(page => page.routePath), proxyPages),
+		[compiled, proxyPages],
+	);
 
 	return (
-		<MicroAppRouter {...microAppProps}>
-			<AppRoutes>
-				{engineProps.indexElement ? <AppRoute index element={engineProps.indexElement} /> : null}
-				{compiled.map(page => (
-					<AppRoute
-						key={page.routePath}
-						path={page.routePath}
-						element={<PageReadGuard page={page.page}>{page.element}</PageReadGuard>}
-					/>
-				))}
-			</AppRoutes>
-			{/* Omitted entirely when the module exposes none: every child of `<WidgetRoutes>`
+		<ModuleRoutesContext.Provider value={moduleRoutes}>
+			<MicroAppRouter {...microAppProps}>
+				<AppRoutes>
+					{engineProps.indexElement ? <AppRoute index element={engineProps.indexElement} /> : null}
+					{compiled.map(page => (
+						<AppRoute
+							key={page.routePath}
+							path={page.routePath}
+							element={withOwner(proxyPages?.[routeRoot(page.routePath)],
+								<PageReadGuard page={page.page}>{page.element}</PageReadGuard>)}
+						/>
+					))}
+				</AppRoutes>
+				{/* Omitted entirely when the module exposes none: every child of `<WidgetRoutes>`
 				must be a `<WidgetRoute>`, so an empty group is the safer shape than one holding
 				a conditional. */}
-			{widgets && widgets.length > 0 ? (
-				<WidgetRoutes>
-					{widgets.map(widget => (
-						<WidgetRoute key={widget.name} name={widget.name} Component={widget.Component} />
-					))}
-				</WidgetRoutes>
-			) : null}
-		</MicroAppRouter>
+				{widgets && widgets.length > 0 ? (
+					<WidgetRoutes>
+						{widgets.map(widget => (
+							<WidgetRoute key={widget.name} name={widget.name} Component={widget.Component} />
+						))}
+					</WidgetRoutes>
+				) : null}
+			</MicroAppRouter>
+		</ModuleRoutesContext.Provider>
 	);
+}
+
+function withOwner(ownerSlug: string | undefined, element: React.ReactNode): React.ReactNode {
+	return ownerSlug ? <OwnerMicroAppGate ownerSlug={ownerSlug}>{element}</OwnerMicroAppGate> : element;
 }

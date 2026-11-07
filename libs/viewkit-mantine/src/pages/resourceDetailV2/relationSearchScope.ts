@@ -18,14 +18,20 @@ export function relationSearchSourceFields(spec: RelationSearchSpec | undefined)
 	return Array.from(new Set(fields)).sort();
 }
 
-/** Each select's scope for the current form values. A source field left empty narrows nothing. */
+/**
+ * Each select's scope for the current form values. A source field left empty narrows nothing; the
+ * fixed graph always applies. Both go to the locked graph, the removable `graph` to `initialGraph`.
+ */
 export function buildRelationSearchScopes(
 	spec: RelationSearchSpec, values: Record<string, unknown>,
 ): Record<string, RecordSearchScope> {
 	return Object.fromEntries(Object.entries(spec).map(([field, entry]) => {
 		const conditions: dyn.SearchNode[] = Object.entries(entry.matchFormFields ?? {})
 			.filter(([, formField]) => hasValue(values[formField]))
-			.map(([targetField, formField]) => ({ if: [targetField, '=', values[formField]] }));
+			.map(([targetField, formField]) => ({ if: [targetField, '=', values[formField]] }) as dyn.SearchNode);
+		if (entry.fixedGraph) {
+			conditions.unshift(entry.fixedGraph as dyn.SearchNode);
+		}
 		const graph: dyn.SearchNode | undefined = conditions.length > 1 ? { and: conditions } : conditions[0];
 		return [field, {
 			searchField: entry.searchField,

@@ -1,6 +1,7 @@
 import { definePage, PageNode } from '@nikkierp/viewengine/metadata';
 import {
 	collapsibleSectionNode, resourceDetailV2Props, resourceFormColumnNode, resourceListV2Props, resourceSplitViewProps,
+	statusStripProps,
 } from '@nikkierp/viewkit-mantine/props';
 
 import * as c from '../constants';
@@ -59,13 +60,11 @@ function buildServiceDetailProps() {
 		translationNs: c.IAM_MODULE,
 		titleLvl1: { schemaField: 'display_name' },
 		backLinkTitle: { linkHref: '../' },
-		allStatuses: [
-			{ value: 'draft', label: 'status.draft' },
-			{ value: 'active', label: 'status.active' },
-			{ value: 'suspended', label: 'status.suspended', alternativeEnd: true },
-		],
-		currentStatus: { schemaField: 'status' },
-		statusPlacement: 'firstSectionHeader',
+		...statusStripProps({
+			statuses: ['draft', 'active', 'suspended'],
+			prefix: 'status.',
+			alternativeEnds: ['suspended'],
+		}),
 		standardActionCommands: {
 			getById: ServiceCommands.GET_BY_ID,
 			create: ServiceCommands.CREATE,

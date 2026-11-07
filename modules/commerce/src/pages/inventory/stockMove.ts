@@ -7,6 +7,7 @@ import {
 import * as c from '../../constants/inventory';
 import { StockMoveCommands } from '../../features/inventory/stockMove/commands';
 import { StockMoveLineCommands } from '../../features/inventory/stockMoveLine/commands';
+import { moveDetailedOperationsNode } from '../../viewkit/inventory/props';
 
 import type { ComponentNode } from '@nikkierp/viewengine/metadata';
 
@@ -101,6 +102,7 @@ function buildStockMoveFieldsSection(): ComponentNode {
 		layout: 'formBlocks',
 		translationNs: c.INVENTORY_MODULE,
 		header: 'form.generalInformation',
+		rightSegment: moveDetailedOperationsNode(),
 	}, [
 		resourceFormColumnNode({
 			header: 'form.generalInformation',
@@ -127,7 +129,7 @@ function buildMoveLinesResource() {
 		searchCommand: StockMoveLineCommands.SEARCH,
 		initialGraph: { if: ['move_id', '=', '${id}'] },
 		fields: [
-			'product_variant_id', 'quantity', 'uom_id', 'source_location_id', 'destination_location_id', 'lot_ref',
+			'product_variant_id', 'quantity', 'uom_id', 'source_location_id', 'destination_location_id', 'lot_id', 'lot_name',
 		],
 		linkField: 'id',
 		linkRoutePath: MOVE_LINES_ROUTE_PATH,

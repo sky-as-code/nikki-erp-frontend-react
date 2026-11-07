@@ -1,6 +1,7 @@
 import { VIEW_ENGINE_API_VERSION } from '@nikkierp/viewengine/core';
 
 import { attributeValuesRenderer } from './components/attributeValues/AttributeValues';
+import { moveDetailedOperationsRenderer } from './components/moveDetailedOperations/MoveDetailedOperations';
 import { stockTransferAllMovesRenderer } from './components/stockTransferMoves/StockTransferAllMoves';
 import { stockTransferMovesRenderer } from './components/stockTransferMoves/StockTransferMoves';
 import { templateAttributesRenderer } from './components/templateAttributes/TemplateAttributes';
@@ -25,6 +26,7 @@ export const inventoryViewKit: IViewKit = {
 		registry.registerComponentRenderer(templateAttributesHeaderRenderer);
 		registry.registerComponentRenderer(stockTransferMovesRenderer);
 		registry.registerComponentRenderer(stockTransferAllMovesRenderer);
+		registry.registerComponentRenderer(moveDetailedOperationsRenderer);
 	},
 };
 

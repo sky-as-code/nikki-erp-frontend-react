@@ -239,6 +239,7 @@ describe('Product template detail sections', () => {
 				prefix: 'template_status.',
 			},
 			product_type: { renderer: 'translated', prefix: 'product_type.' },
+			inventory_tracking: { renderer: 'translated', prefix: 'inventory_tracking.' },
 			base_sales_price: { renderer: 'money' },
 		});
 	});
@@ -260,14 +261,15 @@ describe('Product template attribute configuration', () => {
 	 * PROD-009: the lines are edited in a form section, so they ride the template's own save, and it
 	 * sits right after General, above the related tabs. Create too: the create accepts them.
 	 */
-	it('edits the attributes in a section after General, on create and on update', () => {
+	it('edits the attributes in a section after General and Trading, on create and on update', () => {
 		const { createNodes, childrenNodes } = detailProps();
 
 		for (const nodes of [createNodes, childrenNodes]) {
-			expect(nodes).toHaveLength(2);
+			expect(nodes).toHaveLength(3);
 			expect(nodes[0].props).toMatchObject({ header: 'form.generalInformation' });
-			expect(nodes[1].props).toMatchObject({ header: 'product_template_sections_attributes' });
-			expect(JSON.stringify(nodes[1])).toContain(TEMPLATE_ATTRIBUTES);
+			expect(nodes[1].props).toMatchObject({ header: 'form.trading' });
+			expect(nodes[2].props).toMatchObject({ header: 'product_template_sections_attributes' });
+			expect(JSON.stringify(nodes[2])).toContain(TEMPLATE_ATTRIBUTES);
 		}
 	});
 
@@ -322,14 +324,26 @@ describe('Product template form layout', () => {
 		};
 	}
 
-	/** INV-005..009: prices per unit, cost on the template, units beside the dimensions, no status block. */
-	it('lays out product type, sales, purchasing and dimensions with no costing or status block', () => {
+	/**
+	 * INV-005..009: prices per unit, cost on the template, units beside the dimensions, no status block.
+	 * Sales and purchasing sit in their own Trading section, open by default, below the general information.
+	 */
+	it('lays out type, tracking and dimensions, then sales and purchasing, with no costing or status block', () => {
 		const { createNodes, childrenNodes } = templateDetail();
 
 		for (const nodes of [createNodes, childrenNodes]) {
 			expect(formBlocks(nodes[0])).toEqual([
 				{ header: undefined, fields: ['product_type', 'is_combo'] },
 				{ header: 'form.identification', fields: ['name', 'short_name', 'category_id', 'brand_id'] },
+				{ header: 'form.inventory', fields: ['inventory_tracking'] },
+				{ header: 'form.dimensions', fields: [
+					{ label: 'fields.default_weight', fields: ['@@default_weight', '@@weight_uom_symbol'] },
+					{ label: 'fields.default_length', fields: ['@@default_length', '@@dimension_uom_symbol'] },
+					{ label: 'fields.default_width', fields: ['@@default_width', '@@dimension_uom_symbol'] },
+					{ label: 'fields.default_height', fields: ['@@default_height', '@@dimension_uom_symbol'] },
+				] },
+			]);
+			expect(formBlocks(nodes[1])).toEqual([
 				{ header: 'form.sales', fields: [
 					'sale_ok',
 					{ label: 'fields.base_sales_price', fields: ['@@base_sales_price', '$$common:per', '@@uom_id'] },
@@ -340,15 +354,10 @@ describe('Product template form layout', () => {
 					{ label: 'fields.cost', fields: ['@@cost', '$$common:per', '@@uom_id'] },
 					'purchase_description',
 				] },
-				{ header: 'form.dimensions', fields: [
-					{ label: 'fields.default_weight', fields: ['@@default_weight', '@@weight_uom_symbol'] },
-					{ label: 'fields.default_length', fields: ['@@default_length', '@@dimension_uom_symbol'] },
-					{ label: 'fields.default_width', fields: ['@@default_width', '@@dimension_uom_symbol'] },
-					{ label: 'fields.default_height', fields: ['@@default_height', '@@dimension_uom_symbol'] },
-				] },
 			]);
 			expect(nodes[0].children?.[0].props).toMatchObject({ showTitle: false, isFluid: false });
-			expect(nodes[1].props).toMatchObject({ expanded: false });
+			expect(nodes[1].props).toMatchObject({ expanded: true });
+			expect(nodes[2].props).toMatchObject({ expanded: false });
 		}
 	});
 
@@ -373,12 +382,15 @@ describe('Product variant kinds', () => {
 		expect(props.primary.props.fieldRenderers.variant_kind.prefix).toBe('variant_kind_label.');
 	});
 
-	it('shows the kind, the base and the eligibility on the variant form', () => {
+	/** The kind, the base and the eligibility are internal to configuration: the variant form does not show them. */
+	it('keeps the kind, the base and the eligibility off the variant form', () => {
 		const [page] = buildProductVariantPages();
 		const fields = collectComponents(page, 'resourceForm.column')
 			.flatMap(node => (node.props?.fields as string[] | undefined) ?? []);
 
-		expect(fields).toEqual(expect.arrayContaining(['variant_kind', 'base_variant_id', 'is_transaction_eligible']));
+		for (const field of ['variant_kind', 'base_variant_id', 'is_transaction_eligible']) {
+			expect(fields).not.toContain(field);
+		}
 	});
 
 	/** F2-001: create and edit share one layout; an uneditable field shows as text, not a gap. */
@@ -395,7 +407,7 @@ describe('Product stock integration', () => {
 	 * Product is an entry point onto stock, not an owner of it. Each section reads a resource
 	 * another part of the module owns and links to the page that owns it (CR §4.4, §6.1).
 	 */
-	it('shows a variant its stock, its movements and its putaway rules', () => {
+	it('shows a variant its stock, its movements and its putaway rules, then its Production records', () => {
 		const [page] = buildProductVariantPages();
 		const tables = relatedTables(page);
 
@@ -403,6 +415,11 @@ describe('Product stock integration', () => {
 			c.STOCK_QUANT_SCHEMA_NAME,
 			c.STOCK_MOVE_SCHEMA_NAME,
 			c.PUTAWAY_RULE_SCHEMA_NAME,
+			'prod_assembly',
+			'prod_assembly_component',
+			'mftr_bom',
+			'mftr_bom_line',
+			'mftr_manufacturing_order',
 		]);
 
 		// Stock names the variant `product_variant_id`; a putaway rule calls the same reference

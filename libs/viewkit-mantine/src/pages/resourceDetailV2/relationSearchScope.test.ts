@@ -51,4 +51,16 @@ describe('relation search scopes', () => {
 			initialGraph: directOnly,
 		});
 	});
+
+	it('locks a fixed graph ahead of the matched fields, also with no form value', () => {
+		const serialOnly = { if: ['product_template_inventory_tracking', '=', 'serial'] };
+		const alone = buildRelationSearchScopes({ product_variant_id: { fixedGraph: serialOnly } }, {});
+		const matched = buildRelationSearchScopes(
+			{ serial_id: { fixedGraph: serialOnly, matchFormFields: { product_variant_id: 'product_variant_id' } } },
+			{ product_variant_id: 'V1' },
+		);
+
+		expect(alone.product_variant_id.graph).toEqual(serialOnly);
+		expect(matched.serial_id.graph).toEqual({ and: [serialOnly, { if: ['product_variant_id', '=', 'V1'] }] });
+	});
 });
